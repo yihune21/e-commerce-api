@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,11 +9,12 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
+	"github.com/yihune21/e-commerce-api/internal/database"
 	"github.com/yihune21/e-commerce-api/utils"
 )
 
 type apiConfig struct{
-	db *sql.DB
+	db *database.Queries
 }
 
 func main()  {
@@ -31,7 +31,6 @@ func main()  {
 	apiCfg := apiConfig{
 		db : db_conn,
 	}
-	apiCfg.db.Ping()
 	fmt.Println("Database connected succefully!")
 
 
@@ -51,6 +50,7 @@ func main()  {
 
 	v1Router.Get("/health",handlerHealthy)
 	v1Router.Get("/err" , handelError)
+	v1Router.Post("/user",apiCfg.New)
 
 	router.Mount("/v1",v1Router)
 
