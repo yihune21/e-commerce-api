@@ -8,19 +8,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/yihune21/e-commerce-api/internal/database"
+	jwtAuth "github.com/yihune21/e-commerce-api/jwt"
 	passwordhashing "github.com/yihune21/e-commerce-api/password_hashing"
 )
-
-
-type user struct{
-	Id uuid.UUID `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-	Password string `json:"password"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
-
-}
 
 func (apiConf apiConfig) New(w http.ResponseWriter , r *http.Request){
 	type  parameters struct{
@@ -57,6 +47,13 @@ func (apiConf apiConfig) New(w http.ResponseWriter , r *http.Request){
 	if err != nil {
 		respondWithError(w , 201 , fmt.Sprintf("Couldn't able to create user %v",err))
 	}
-
-   respondWithJSON(w , 200,user)
+	
+   access_token := jwtAuth.GenerateToken(user)
+   fmt.Printf("Access token %v",access_token)
+   respondWithJSON(w , 200,databaseUserToUser(user))
 }
+
+func (apiConf *apiConfig)handlerGetUserByUserId(w http.ResponseWriter ,r *http.Request , user database.User){
+	respondWithJSON(w, 200 , databaseUserToUser(user))
+}
+
