@@ -30,3 +30,13 @@ func databaseUserToUser(dbuser database.User) User  {
 		UpdatedAt: dbuser.UpdatedAt,
 	}
 }
+
+type Token  struct{
+	AccessToken string
+}
+
+func ResponseToken(tokenString string)Token {
+	return Token{
+		AccessToken: tokenString,
+	}
+}

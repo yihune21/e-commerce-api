@@ -47,9 +47,8 @@ func (apiConf apiConfig) New(w http.ResponseWriter , r *http.Request){
 	if err != nil {
 		respondWithError(w , 201 , fmt.Sprintf("Couldn't able to create user %v",err))
 	}
-	
-   access_token := jwtAuth.GenerateToken(user)
-   fmt.Printf("Access token %v",access_token)
+
+
    respondWithJSON(w , 200,databaseUserToUser(user))
 }
 
@@ -57,3 +56,34 @@ func (apiConf *apiConfig)handlerGetUserByUserId(w http.ResponseWriter ,r *http.R
 	respondWithJSON(w, 200 , databaseUserToUser(user))
 }
 
+func (apiConf apiConfig)Login(w http.ResponseWriter , r *http.Request){
+	type parameters struct{
+		Email string `json:"email"`
+		Password string `json:"password"`
+	}
+	decode := json.NewDecoder(r.Body)
+	params := parameters{}
+
+	err := decode.Decode(&params)
+
+	if err !=  nil {
+		respondWithError(w , 400 , fmt.Sprintf("Error with parsing json %v " ,err))
+		return 
+	}
+    
+	user , err := apiConf.db.GetUserByEmail(r.Context(), params.Email)
+	if err != nil{
+		respondWithError(w ,404 , "User not found")
+		return
+	}
+
+	is_matched := passwordhashing.VerifyPassword(params.Password , user.Password)
+	if !is_matched{
+        respondWithError(w , 400 ,"Invalid Credential")
+		return
+	}
+    
+	access_token := jwtAuth.GenerateToken(user)
+
+    respondWithJSON(w , 200 ,ResponseToken(access_token) )
+}

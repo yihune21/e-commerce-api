@@ -23,7 +23,7 @@ func readPrivateKey() *rsa.PrivateKey {
    return privateKey
 }
 func readPublicKey() *rsa.PublicKey {
-	publicKeyData,  err := os.ReadFile("keys/private.pem")
+	publicKeyData,  err := os.ReadFile("keys/public.pem")
 
 	if err != nil{
 		panic(err)
@@ -41,7 +41,7 @@ func GenerateToken(user database.User) string {
 	 
      claims := jwt.MapClaims{
         "sub":user.ID.String(),
-		"exp": time.Now().Add(24 * time.Hour).Unix(),
+		"exp": time.Now().Add(300 * time.Second).Unix(),
 	 }
 	 token := jwt.NewWithClaims(jwt.SigningMethodRS256 ,claims )
 	 access_token ,err:= token.SignedString(private_key)
@@ -52,10 +52,10 @@ func GenerateToken(user database.User) string {
 	 return access_token
 }
 
-func VerfiyToken(access_token string) bool {
+func VerfiyToken(tokenString string) bool {
 	public_key := readPublicKey()
 	 
-	parsedToken, err := jwt.Parse(access_token, func(token *jwt.Token) (interface{}, error) {
+	parsedToken, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return public_key, nil
 	})
 	if err != nil {
