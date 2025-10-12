@@ -9,3 +9,7 @@ SELECT * FROM users WHERE id = $1;
 
 -- name: GetUserByEmail :one
 SELECT * FROM users WHERE email = $1;
+
+-- name: UpdateUserPasword :one
+UPDATE users SET password = $1 WHERE id = $2
+RETURNING *;

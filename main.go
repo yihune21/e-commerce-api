@@ -53,6 +53,8 @@ func main()  {
 	v1Router.Post("/user",apiCfg.New)
 	v1Router.Get("/user",apiCfg.middlewareAuth(apiCfg.handlerGetUserByUserId))
 	v1Router.Get("/login",apiCfg.Login)
+	v1Router.Post("/refreshToken",apiCfg.RefreshToken)
+	v1Router.Patch("/update-password",apiCfg.middlewareAuth(apiCfg.UpdateUserPassword))
 
 	router.Mount("/v1",v1Router)
 

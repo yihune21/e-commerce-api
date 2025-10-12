@@ -32,11 +32,13 @@ func databaseUserToUser(dbuser database.User) User  {
 }
 
 type Token  struct{
-	AccessToken string
+	AccessToken string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
-func ResponseToken(tokenString string)Token {
+func ResponseToken(accessToken string, refreshToken string) Token {
 	return Token{
-		AccessToken: tokenString,
+		AccessToken: accessToken,
+		RefreshToken: refreshToken,
 	}
 }

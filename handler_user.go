@@ -21,7 +21,7 @@ func (apiConf apiConfig) New(w http.ResponseWriter , r *http.Request){
 
 	decode := json.NewDecoder(r.Body)
 	params := parameters{}
-
+    
 	err := decode.Decode(&params)
 
 	if err !=  nil {
@@ -31,7 +31,7 @@ func (apiConf apiConfig) New(w http.ResponseWriter , r *http.Request){
     
     hashed_password , err := passwordhashing.HashPassword(params.Password)
 	if err != nil {
-		fmt.Printf("Error with password hashing %v",err)
+		respondWithError(w,400 ,fmt.Sprintf("Error with password hashing %v",err))
 		return
 	}
 
@@ -46,10 +46,12 @@ func (apiConf apiConfig) New(w http.ResponseWriter , r *http.Request){
 	})
 	if err != nil {
 		respondWithError(w , 201 , fmt.Sprintf("Couldn't able to create user %v",err))
+		return
 	}
 
-
-   respondWithJSON(w , 200,databaseUserToUser(user))
+    
+    fmt.Printf("Dear user %s,You've successfully created an account!\n",user.Name)
+    respondWithJSON(w , 200,databaseUserToUser(user))
 }
 
 func (apiConf *apiConfig)handlerGetUserByUserId(w http.ResponseWriter ,r *http.Request , user database.User){
@@ -83,7 +85,132 @@ func (apiConf apiConfig)Login(w http.ResponseWriter , r *http.Request){
 		return
 	}
     
-	access_token := jwtAuth.GenerateToken(user)
+	fmt.Printf("Dear user %s,You're logged in successfully!\n",user.Name)
 
-    respondWithJSON(w , 200 ,ResponseToken(access_token) )
+	// Generate both access and refresh tokens
+	access_token := jwtAuth.GenerateAccessToken(user)
+	refresh_token := jwtAuth.GenerateRefreshToken(user)
+
+	// Store refresh token in database
+	_, err = apiConf.db.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
+		ID: uuid.New(),
+		UserID: user.ID,
+		Token: refresh_token,
+		ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
+		CreatedAt: time.Now().UTC(),
+	})
+	if err != nil {
+		respondWithError(w, 500, fmt.Sprintf("Failed to store refresh token: %v", err))
+		return
+	}
+
+    respondWithJSON(w , 200 ,ResponseToken(access_token, refresh_token))
+}
+
+func (apiConf apiConfig) UpdateUserPassword(w http.ResponseWriter , r *http.Request , user database.User)  {
+	type parameters struct{
+          Currentassword string `json:"current_password"`
+          NewPassword string `json:"new_password"`
+	}
+
+	decode := json.NewDecoder(r.Body)
+	params := parameters{}
+
+	err := decode.Decode(&params)
+
+	if err !=  nil {
+		respondWithError(w , 400 , fmt.Sprintf("Error with parsing json %v " ,err))
+		return 
+	}
+
+	is_matched := passwordhashing.VerifyPassword(params.Currentassword , user.Password)
+	if !is_matched {
+		respondWithError(w , 401 , "Incorrect current password!")
+		return
+	}
+    
+	hash_password,err := passwordhashing.HashPassword(params.NewPassword)
+	if err != nil {
+	   respondWithError(w,400 , "Couldn't able to hash the new password.")
+	   return
+	}
+    user,err = apiConf.db.UpdateUserPasword(r.Context(),database.UpdateUserPaswordParams{
+		Password: hash_password,
+		ID: user.ID,
+	})
+    
+	fmt.Printf("Dear user %s,password updated successfully!\n",user.Name)
+	respondWithJSON(w,200,databaseUserToUser(user))
+
+}
+
+func (apiConf apiConfig) RefreshToken(w http.ResponseWriter, r *http.Request) {
+	type parameters struct {
+		RefreshToken string `json:"refresh_token"`
+	}
+
+	decode := json.NewDecoder(r.Body)
+	params := parameters{}
+
+	err := decode.Decode(&params)
+	if err != nil {
+		respondWithError(w, 400, fmt.Sprintf("Error parsing JSON: %v", err))
+		return
+	}
+
+	// Verify the refresh token and extract user ID
+	userID, err := jwtAuth.VerifyRefreshToken(params.RefreshToken)
+	if err != nil {
+		respondWithError(w, 401, fmt.Sprintf("Invalid refresh token: %v", err))
+		return
+	}
+
+	// Check if refresh token exists in database and is not revoked
+	dbToken, err := apiConf.db.GetRefreshTokenByToken(r.Context(), params.RefreshToken)
+	if err != nil {
+		respondWithError(w, 401, "Refresh token not found or expired")
+		return
+	}
+
+	// Verify that the token belongs to the correct user
+	if dbToken.UserID != userID {
+		respondWithError(w, 401, "Token user mismatch")
+		return
+	}
+
+	// Get user from database
+	user, err := apiConf.db.GetUserById(r.Context(), userID)
+	if err != nil {
+		respondWithError(w, 404, "User not found")
+		return
+	}
+
+	// Generate new access token
+	newAccessToken := jwtAuth.GenerateAccessToken(user)
+
+	// Optionally generate new refresh token (refresh token rotation)
+	newRefreshToken := jwtAuth.GenerateRefreshToken(user)
+
+	// Revoke old refresh token
+	err = apiConf.db.RevokeRefreshToken(r.Context(), params.RefreshToken)
+	if err != nil {
+		respondWithError(w, 500, "Failed to revoke old refresh token")
+		return
+	}
+
+	// Store new refresh token
+	_, err = apiConf.db.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
+		ID:        uuid.New(),
+		UserID:    user.ID,
+		Token:     newRefreshToken,
+		ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
+		CreatedAt: time.Now().UTC(),
+	})
+	if err != nil {
+		respondWithError(w, 500, "Failed to store new refresh token")
+		return
+	}
+
+	fmt.Printf("Tokens refreshed for user %s\n", user.Name)
+	respondWithJSON(w, 200, ResponseToken(newAccessToken, newRefreshToken))
 }

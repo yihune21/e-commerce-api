@@ -29,6 +29,7 @@ func (apiConf *apiConfig) middlewareAuth(handler authHandler) http.HandlerFunc{
 		  user_id,err := jwtAuth.ExtractUserIDFromToken(access_token)
 		  if err != nil{
 			respondWithError(w , 400 , fmt.Sprintf("Error with extracting user id %v",err))
+			return
 		  }
 
 		  user , err := apiConf.db.GetUserById(r.Context() ,user_id)
