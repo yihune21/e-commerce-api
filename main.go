@@ -49,7 +49,7 @@ func main()  {
 	v1Router := chi.NewRouter()
 
 	v1Router.Get("/health",handlerHealthy)
-	v1Router.Get("/err" , handelError)
+	v1Router.Get("/err" , handleError)
 	v1Router.Post("/user",apiCfg.New)
 	v1Router.Get("/user",apiCfg.middlewareAuth(apiCfg.handlerGetUserByUserId))
 	v1Router.Get("/login",apiCfg.Login)

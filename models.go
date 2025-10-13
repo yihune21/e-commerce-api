@@ -42,3 +42,12 @@ func ResponseToken(accessToken string, refreshToken string) Token {
 		RefreshToken: refreshToken,
 	}
 }
+
+type HealthRes  struct{
+	Status string `json:"status"`
+}
+func ResponseHealth(msg string) HealthRes {
+	return HealthRes{
+		 Status: msg,
+	}
+}

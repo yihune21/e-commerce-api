@@ -11,6 +11,15 @@ import (
 	"github.com/google/uuid"
 )
 
+type Otp struct {
+	ID        uuid.UUID
+	Otp       string
+	UserID    uuid.UUID
+	ExpAt     time.Time
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
 type RefreshToken struct {
 	ID        uuid.UUID
 	UserID    uuid.UUID
