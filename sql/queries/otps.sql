@@ -5,4 +5,4 @@ VALUES ($1,$2,$3,$4 ,$5,$6)
 RETURNING *;
 
 -- name: GetOtpByUserId :one
-SELECT * FROM users WHERE id = $1;
+SELECT * FROM otps WHERE user_id = $1;

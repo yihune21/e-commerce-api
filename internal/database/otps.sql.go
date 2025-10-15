@@ -50,17 +50,17 @@ func (q *Queries) CreateOtp(ctx context.Context, arg CreateOtpParams) (Otp, erro
 }
 
 const getOtpByUserId = `-- name: GetOtpByUserId :one
-SELECT id, name, email, password, created_at, updated_at FROM users WHERE id = $1
+SELECT id, otp, user_id, exp_at, created_at, updated_at FROM otps WHERE user_id = $1
 `
 
-func (q *Queries) GetOtpByUserId(ctx context.Context, id uuid.UUID) (User, error) {
-	row := q.db.QueryRowContext(ctx, getOtpByUserId, id)
-	var i User
+func (q *Queries) GetOtpByUserId(ctx context.Context, userID uuid.UUID) (Otp, error) {
+	row := q.db.QueryRowContext(ctx, getOtpByUserId, userID)
+	var i Otp
 	err := row.Scan(
 		&i.ID,
-		&i.Name,
-		&i.Email,
-		&i.Password,
+		&i.Otp,
+		&i.UserID,
+		&i.ExpAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

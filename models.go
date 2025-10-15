@@ -51,3 +51,13 @@ func ResponseHealth(msg string) HealthRes {
 		 Status: msg,
 	}
 }
+ type Otp struct{
+      Status string `json:"status"`
+	  Otp    string `json:"otp"`
+}
+func OtpRes(status , otp string) Otp {
+	return Otp{
+		Status: status,
+		Otp: otp,
+	}
+}

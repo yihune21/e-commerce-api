@@ -216,9 +216,48 @@ func (apiConf apiConfig) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, 200, ResponseToken(newAccessToken, newRefreshToken))
 }
 
-func (apiConf apiConfig)ForgotPassword(w http.ResponseWriter , r *http.Request , user database.User)  {
+func (apiConf apiConfig)RequestForgotPassword(w http.ResponseWriter , r *http.Request)  {
 	type parameters struct{
-		// Email string `json:"email"`
+		Email string `json:"email"`
+	}
+	
+	decode := json.NewDecoder(r.Body)
+	params := parameters{}
+	
+	err := decode.Decode(&params)
+	
+	if err != nil{
+		respondWithError(w , 400 , fmt.Sprintf("Error with decoding parameters %v",err))
+		return
+	}
+    
+	user, err := apiConf.db.GetUserByEmail(r.Context(),params.Email)
+    
+	if err != nil {
+		respondWithError(w , 404 , fmt.Sprintf("User not found %v",err))
+        return
+	}
+
+	otp := generateSecureOTP(6)
+    db_otp,err := apiConf.db.CreateOtp(r.Context(), database.CreateOtpParams{
+		ID: uuid.New(),
+		Otp: otp,
+		UserID: user.ID,
+		ExpAt: time.Now().Add(5 * time.Minute),
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
+	},
+   )
+  
+
+   respondWithJSON(w,200 , OtpRes("Sent" ,db_otp.Otp))
+
+
+}
+func (apiConf apiConfig)ForgotPassword(w http.ResponseWriter , r *http.Request)  {
+	type parameters struct{
+		Email string `json:"email"`
+		Otp   string `json:"otp"`
 		NewPassword string `json:"new_password"`
 	}
 	
@@ -231,48 +270,45 @@ func (apiConf apiConfig)ForgotPassword(w http.ResponseWriter , r *http.Request ,
 		respondWithError(w , 400 , fmt.Sprintf("Error with decoding parameters %v",err))
 		return
 	}
-
-	// user, err = apiConf.db.GetUserByEmail(r.Context(),params.Email)
     
-	// if err != nil {
-	// 	respondWithError(w , 404 , fmt.Sprintf("User not found %v",err))
-    //     return
-	// }
-
-	otp := generateSecureOTP(6)
-	fmt.Printf("You otp %v",otp)
-    db_otp,err := apiConf.db.CreateOtp(r.Context(), database.CreateOtpParams{
-		ID: uuid.New(),
-		Otp: otp,
-		UserID: user.ID,
-		ExpAt: time.Now().Add(5 * time.Minute),
-		CreatedAt: time.Now().UTC(),
-		UpdatedAt: time.Now().UTC(),
-	},
-   )
-   is_matched := VerifyOTP(db_otp.Otp,otp)
-   
-   if !is_matched{
-	  respondWithError(w,401,"Incorrect OTP!")
-	  return
-   }
-   hashed_password,err := passwordhashing.HashPassword(params.NewPassword)
-   if err != nil {
-	 respondWithError(w, 400 ,fmt.Sprintf("Error with password hashing %v",err))
-	 return
-   }
-   user , err = apiConf.db.UpdateUserPasword(r.Context(),database.UpdateUserPaswordParams{
-		Password: hashed_password,
-		ID: user.ID,
-   })
+	user, err := apiConf.db.GetUserByEmail(r.Context(),params.Email)
     
-   if err != nil {
-	 respondWithError(w, 400 ,fmt.Sprintf("Error with updating user password  %v",err))
-	 return
-   }
+	if err != nil {
+		respondWithError(w , 404 , fmt.Sprintf("User not found %v",err))
+        return
+	}
 
+	 otp ,err := apiConf.db.GetOtpByUserId(r.Context(),user.ID)
+	 if err != nil{
+		respondWithError(w , 400 , fmt.Sprintf("Error with fetching user otp %v",err))
+		return
+	 }
+    if time.Now().After(otp.ExpAt ){
+		respondWithError(w ,400 ,"OTP is expired!")
+		return
+	}
+	is_matched := VerifyOTP(otp.Otp,params.Otp)
+	
+	if !is_matched{
+		respondWithError(w,401,"Incorrect OTP!")
+		return
+	}
+	hashed_password,err := passwordhashing.HashPassword(params.NewPassword)
+	if err != nil {
+		respondWithError(w, 400 ,fmt.Sprintf("Error with password hashing %v",err))
+		return
+	}
+	user , err = apiConf.db.UpdateUserPasword(r.Context(),database.UpdateUserPaswordParams{
+			Password: hashed_password,
+			ID: user.ID,
+	})
+		
+	if err != nil {
+		respondWithError(w, 400 ,fmt.Sprintf("Error with updating user password  %v",err))
+		return
+	}
 
-   respondWithJSON(w,200 ,databaseUserToUser(user) )
+   respondWithJSON(w,200 , OtpRes("Verified" ,otp.Otp))
 
 
 }
