@@ -7,9 +7,6 @@ import (
 	"github.com/yihune21/e-commerce-api/internal/database"
 )
 
-
-
-
 type User struct{
 	Id uuid.UUID `json:"id"`
 	Name  string `json:"name"`
@@ -30,7 +27,26 @@ func databaseUserToUser(dbuser database.User) User  {
 		UpdatedAt: dbuser.UpdatedAt,
 	}
 }
+type Admin struct{
+	Id uuid.UUID `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+	Password string `json:"password"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
 
+}
+
+func databaseAdminToAdmin(dbadmin database.Admin) Admin  {
+	return Admin{
+		Id: dbadmin.ID,
+		Name: dbadmin.Name,
+		Email: dbadmin.Email,
+		Password: dbadmin.Password,
+		CreatedAt: dbadmin.CreatedAt,
+		UpdatedAt: dbadmin.UpdatedAt,
+	}
+}
 type Token  struct{
 	AccessToken string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`

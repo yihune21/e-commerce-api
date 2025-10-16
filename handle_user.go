@@ -28,7 +28,10 @@ func (apiConf apiConfig) New(w http.ResponseWriter , r *http.Request){
 		respondWithError(w , 400 , fmt.Sprintf("Error with parsing json %v " ,err))
 		return 
 	}
-    
+    if len(params.Password) < 8{
+		respondWithError(w , 400 , "Password should be equal or larger than 8")
+		return 
+	}
     hashed_password , err := passwordhashing.HashPassword(params.Password)
 	if err != nil {
 		respondWithError(w,400 ,fmt.Sprintf("Error with password hashing %v",err))
@@ -128,7 +131,10 @@ func (apiConf apiConfig) UpdateUserPassword(w http.ResponseWriter , r *http.Requ
 		respondWithError(w , 401 , "Incorrect current password!")
 		return
 	}
-    
+    if len(params.NewPassword) < 8{
+		respondWithError(w , 400 , "Password should be equal or larger than 8")
+		return 
+	}
 	hash_password,err := passwordhashing.HashPassword(params.NewPassword)
 	if err != nil {
 	   respondWithError(w,400 , "Couldn't able to hash the new password.")

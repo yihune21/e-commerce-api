@@ -11,6 +11,42 @@ import (
 	"github.com/google/uuid"
 )
 
+type Admin struct {
+	ID        uuid.UUID
+	Name      string
+	Email     string
+	Password  string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+type Cart struct {
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	Status    string
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
+}
+
+type CartItem struct {
+	ID         uuid.UUID
+	CartID     uuid.UUID
+	ProductID  uuid.UUID
+	Quantity   int32
+	PriceAtAdd string
+	CreatedAt  sql.NullTime
+	UpdatedAt  sql.NullTime
+}
+
+type Category struct {
+	ID          uuid.UUID
+	Name        string
+	Description sql.NullString
+	ParentID    uuid.NullUUID
+	CreatedAt   sql.NullTime
+	UpdatedAt   sql.NullTime
+}
+
 type Otp struct {
 	ID        uuid.UUID
 	Otp       string
@@ -18,6 +54,19 @@ type Otp struct {
 	ExpAt     time.Time
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+type Product struct {
+	ID          uuid.UUID
+	Name        string
+	Description sql.NullString
+	Price       string
+	Stock       int32
+	CategoryID  uuid.UUID
+	ImageUrl    sql.NullString
+	IsActive    sql.NullBool
+	CreatedAt   sql.NullTime
+	UpdatedAt   sql.NullTime
 }
 
 type RefreshToken struct {

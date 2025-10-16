@@ -57,7 +57,7 @@ func main()  {
 	v1Router.Patch("/update-password",apiCfg.middlewareAuth(apiCfg.UpdateUserPassword))
 	v1Router.Post("/send-otp",apiCfg.RequestForgotPassword)
     v1Router.Post("/verify-otp",apiCfg.ForgotPassword)
-	
+	v1Router.Post("/admin",apiCfg.CreateAdmin)
 	
 	
 	router.Mount("/v1",v1Router)
