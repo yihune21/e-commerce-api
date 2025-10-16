@@ -49,6 +49,15 @@ func (q *Queries) CreateOtp(ctx context.Context, arg CreateOtpParams) (Otp, erro
 	return i, err
 }
 
+const deleteOtpByUserId = `-- name: DeleteOtpByUserId :exec
+DELETE FROM otps WHERE user_id = $1
+`
+
+func (q *Queries) DeleteOtpByUserId(ctx context.Context, userID uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteOtpByUserId, userID)
+	return err
+}
+
 const getOtpByUserId = `-- name: GetOtpByUserId :one
 SELECT id, otp, user_id, exp_at, created_at, updated_at FROM otps WHERE user_id = $1 ORDER BY exp_at DESC LIMIT 1
 `

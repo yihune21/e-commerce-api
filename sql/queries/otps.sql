@@ -7,5 +7,5 @@ RETURNING *;
 -- name: GetOtpByUserId :one
 SELECT * FROM otps WHERE user_id = $1 ORDER BY exp_at DESC LIMIT 1 ;
 
--- -- name: DeleteOtpByUserId :one
--- SELECT * FROM otps WHERE user_id = $1;
+-- name: DeleteOtpByUserId :exec
+DELETE FROM otps WHERE user_id = $1;
