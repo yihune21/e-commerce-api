@@ -50,7 +50,7 @@ func (q *Queries) CreateOtp(ctx context.Context, arg CreateOtpParams) (Otp, erro
 }
 
 const getOtpByUserId = `-- name: GetOtpByUserId :one
-SELECT id, otp, user_id, exp_at, created_at, updated_at FROM otps WHERE user_id = $1
+SELECT id, otp, user_id, exp_at, created_at, updated_at FROM otps WHERE user_id = $1 ORDER BY exp_at DESC LIMIT 1
 `
 
 func (q *Queries) GetOtpByUserId(ctx context.Context, userID uuid.UUID) (Otp, error) {

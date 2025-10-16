@@ -243,7 +243,7 @@ func (apiConf apiConfig)RequestForgotPassword(w http.ResponseWriter , r *http.Re
 		ID: uuid.New(),
 		Otp: otp,
 		UserID: user.ID,
-		ExpAt: time.Now().Add(5 * time.Minute),
+		ExpAt: time.Now().Add(10 * time.Minute),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 	},
@@ -308,7 +308,7 @@ func (apiConf apiConfig)ForgotPassword(w http.ResponseWriter , r *http.Request) 
 		return
 	}
 
-   respondWithJSON(w,200 , OtpRes("Verified" ,otp.Otp))
+   respondWithJSON(w,200 , ResponseHealth("Your password updated successfully"))
 
 
 }
