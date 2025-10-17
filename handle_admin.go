@@ -58,3 +58,22 @@ func (apiConf apiConfig)CreateAdmin(w http.ResponseWriter ,r *http.Request)  {
     respondWithJSON(w , 200,databaseAdminToAdmin(admin))
 
 }
+
+func (apiConf apiConfig)DeleteUser(w http.ResponseWriter ,r *http.Request,admin database.Admin)  {
+	 type parameters struct{
+		UserID uuid.UUID `json:"user_id"`
+	 }
+	 decode := json.NewDecoder(r.Body)
+	 params := parameters{}
+
+	 err := decode.Decode(&params)
+
+	 if err != nil {
+		respondWithError(w , 400 , fmt.Sprintf("Error with parsing json %v", err))
+		return
+	 }
+
+     apiConf.db.DeleteUserByUserId(r.Context() , params.UserID)
+
+     respondWithJSON(w,200 ,ResponseHealth("Successfully deleted user ") )
+}

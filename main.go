@@ -58,6 +58,8 @@ func main()  {
 	v1Router.Post("/send-otp",apiCfg.RequestForgotPassword)
     v1Router.Post("/verify-otp",apiCfg.ForgotPassword)
 	v1Router.Post("/admin",apiCfg.CreateAdmin)
+	v1Router.Post("/delete-user",apiCfg.AdminMiddlewareAuth(apiCfg.DeleteUser))
+
 	
 	
 	router.Mount("/v1",v1Router)
