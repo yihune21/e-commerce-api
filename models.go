@@ -77,3 +77,26 @@ func OtpRes(status , otp string) Otp {
 		Otp: otp,
 	}
 }
+type Product struct{
+	Name string `json:"name"`
+	Description string `json:"description"`
+	Price string `json:"price"`
+	Stock int32 `json:"stock"`
+	CategoryId uuid.UUID `json:"category_id"`
+	ImageUrl string `json:"image_url"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+
+}
+func DatabaseProductToProduct(dbProduct database.Product)Product  {
+	return Product{
+		Name  :dbProduct.Name,
+		Description :dbProduct.Description.String,
+		Price :dbProduct.Price,
+		Stock  :dbProduct.Stock,
+		CategoryId :dbProduct.CategoryID,
+		ImageUrl :dbProduct.ImageUrl.String,
+		CreatedAt: dbProduct.CreatedAt.Time,
+		UpdatedAt: dbProduct.UpdatedAt.Time,
+	}
+}
