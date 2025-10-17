@@ -66,3 +66,24 @@ func(apiConf apiConfig) CreateProduct(w http.ResponseWriter , r *http.Request , 
 	respondWithJSON(w , 200 , DatabaseProductToProduct(product))
 
 }
+
+func(apiConf apiConfig) GetProductByName(w http.ResponseWriter , r *http.Request )  {
+    type parameters struct{
+		Name string `json:"name"`
+	}
+	decode := json.NewDecoder(r.Body)
+	params := parameters{}
+
+	err :=  decode.Decode(&params)
+	if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Errot with parsing json %v" ,err))
+		return
+	}
+	product,err :=  apiConf.db.GetProductByName(r.Context() , params.Name)
+	if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Couldn't find product %v" ,err))
+		return
+	}
+
+	respondWithJSON(w , 200 , DatabaseProductToProduct(product))
+}
