@@ -41,3 +41,39 @@ func (apiConf *apiConfig) middlewareAuth(handler authHandler) http.HandlerFunc{
 	}
 
 }
+
+
+func (apiConf *apiConfig) AdminMiddlewareAuth(handler authHandler) http.HandlerFunc{
+       
+	return func(w http.ResponseWriter , r *http.Request){
+          access_token ,  err := auth.GetToken(r.Header)
+		  if err != nil{
+			respondWithError(w , 401 , fmt.Sprintf("Auth Error %s" , err))
+			return
+		  }
+		  is_valid := jwtAuth.VerfiyToken(access_token)
+          if !is_valid{
+            respondWithError(w , 401 ,"ACCESS TOKEN EXPIRED!")
+			return 
+		  }
+
+		  user_id,err := jwtAuth.ExtractUserIDFromToken(access_token)
+		  if err != nil{
+			respondWithError(w , 400 , fmt.Sprintf("Error with extracting user id %v",err))
+			return
+		  }
+
+		  user , err := apiConf.db.GetUserById(r.Context() ,user_id)
+          if err != nil{
+			 respondWithError(w , 404 , fmt.Sprintf("Couldn't found user %s" , err))
+			 return
+		  }
+		  
+		  if !user.IsAdmin{
+             respondWithError(w , 404 , fmt.Sprintf("User is not admin%s" , err))
+			 return
+		  }
+		  handler(w, r , user)
+	}
+
+}

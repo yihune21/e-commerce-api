@@ -11,15 +11,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type Admin struct {
-	ID        uuid.UUID
-	Name      string
-	Email     string
-	Password  string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-}
-
 type Cart struct {
 	ID        uuid.UUID
 	UserID    uuid.UUID
@@ -83,6 +74,7 @@ type User struct {
 	Name      string
 	Email     string
 	Password  string
+	IsAdmin   bool
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }

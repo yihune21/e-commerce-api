@@ -36,16 +36,6 @@ func readPublicKey() *rsa.PublicKey {
    return publicKey
 }
 
-// type AdminUser interface {
-// 	GetID() uuid.UUID
-// }
-
-// func (u User) GetID() uuid.UUID {
-// 	return u.ID
-// }
-// func (a Admin) GetID() uuid.UUID {
-// 	return a.ID
-// }
 
 func GenerateAccessToken(user database.User) string {
 	 private_key := readPrivateKey()
@@ -81,7 +71,7 @@ func GenerateRefreshToken(user database.User) string {
 	 return refresh_token
 }
 
-// For backward compatibility
+
 func GenerateToken(user database.User) string {
 	return GenerateAccessToken(user)
 }

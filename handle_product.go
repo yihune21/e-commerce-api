@@ -11,7 +11,7 @@ import (
 	"github.com/yihune21/e-commerce-api/internal/database"
 )
 
-func(apiConf apiConfig) CreateProduct(w http.ResponseWriter , r *http.Request , admin database.Admin)  {
+func(apiConf apiConfig) CreateProduct(w http.ResponseWriter , r *http.Request , admin database.User)  {
 	type parameters struct{
 		Name string `json:"name"`
 		Description string `json:"description"`

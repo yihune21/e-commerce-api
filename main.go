@@ -39,7 +39,7 @@ func main()  {
 	router.Use(cors.Handler(
 		cors.Options{
 		AllowedOrigins: []string{"https://*","http://*"},
-		AllowedMethods: []string{"GET","POST","DELETE","OPTIONS"},
+		AllowedMethods: []string{"GET","POST","DELETE","OPTIONS","PUT","PATCH"},
 		AllowedHeaders: []string{"*"},
 		ExposedHeaders: []string{"Link"},
 		AllowCredentials: false,
@@ -51,13 +51,13 @@ func main()  {
 	v1Router.Get("/health",handlerHealthy)
 	v1Router.Get("/err" , handleError)
 	v1Router.Post("/user",apiCfg.New)
+	v1Router.Post("/admin",apiCfg.AdminMiddlewareAuth(apiCfg.NewAdmin))
 	v1Router.Get("/user",apiCfg.middlewareAuth(apiCfg.handlerGetUserByUserId))
 	v1Router.Get("/login",apiCfg.Login)
 	v1Router.Post("/refreshToken",apiCfg.RefreshToken)
 	v1Router.Patch("/update-password",apiCfg.middlewareAuth(apiCfg.UpdateUserPassword))
 	v1Router.Post("/send-otp",apiCfg.RequestForgotPassword)
     v1Router.Post("/verify-otp",apiCfg.ForgotPassword)
-	v1Router.Post("/admin",apiCfg.CreateAdmin)
 	v1Router.Post("/delete-user",apiCfg.AdminMiddlewareAuth(apiCfg.DeleteUser))
 	v1Router.Post("/product",apiCfg.AdminMiddlewareAuth(apiCfg.CreateProduct))
     v1Router.Get("/product",apiCfg.GetProductByName)

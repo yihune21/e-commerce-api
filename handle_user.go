@@ -17,6 +17,7 @@ func (apiConf apiConfig) New(w http.ResponseWriter , r *http.Request){
         Name string `json:"name"`
 		Email string `json:"email"`
 		Password string `json:"password"`
+
 	}
 
 	decode := json.NewDecoder(r.Body)
@@ -44,6 +45,53 @@ func (apiConf apiConfig) New(w http.ResponseWriter , r *http.Request){
 		Name: params.Name,
 		Email: params.Email,
 		Password:hashed_password,
+		IsAdmin: false,
+        CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
+	})
+	if err != nil {
+		respondWithError(w , 201 , fmt.Sprintf("Couldn't able to create user %v",err))
+		return
+	}
+
+    
+    fmt.Printf("Dear user %s,You've successfully created an account!\n",user.Name)
+    respondWithJSON(w , 200,databaseUserToUser(user))
+}
+func (apiConf apiConfig) NewAdmin(w http.ResponseWriter , r *http.Request ,Admin database.User){
+	type  parameters struct{
+        Name string `json:"name"`
+		Email string `json:"email"`
+		Password string `json:"password"`
+      
+	}
+
+	decode := json.NewDecoder(r.Body)
+	params := parameters{}
+    
+	err := decode.Decode(&params)
+
+	if err !=  nil {
+		respondWithError(w , 400 , fmt.Sprintf("Error with parsing json %v " ,err))
+		return 
+	}
+    if len(params.Password) < 8{
+		respondWithError(w , 400 , "Password should be equal or larger than 8")
+		return 
+	}
+    hashed_password , err := passwordhashing.HashPassword(params.Password)
+	if err != nil {
+		respondWithError(w,400 ,fmt.Sprintf("Error with password hashing %v",err))
+		return
+	}
+
+
+	user , err := apiConf.db.CreateUser(r.Context() , database.CreateUserParams{
+		ID:uuid.New(),
+		Name: params.Name,
+		Email: params.Email,
+		Password:hashed_password,
+		IsAdmin: true,
         CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 	})
@@ -321,4 +369,8 @@ func (apiConf apiConfig)ForgotPassword(w http.ResponseWriter , r *http.Request) 
 
 func (apiConf apiConfig)LogOut(w http.ResponseWriter , r *http.Request , user database.User)  {
 	 //TODO:
+}
+
+func (apiConf apiConfig)DeleteUser(w http.ResponseWriter , r *http.Request , user database.User)  {
+	
 }
