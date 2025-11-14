@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/yihune21/e-commerce-api/internal/auth"
 	"github.com/yihune21/e-commerce-api/internal/database"
 	jwtAuth "github.com/yihune21/e-commerce-api/jwt"
 	passwordhashing "github.com/yihune21/e-commerce-api/password_hashing"
@@ -368,7 +369,21 @@ func (apiConf apiConfig)ForgotPassword(w http.ResponseWriter , r *http.Request) 
 }
 
 func (apiConf apiConfig)LogOut(w http.ResponseWriter , r *http.Request , user database.User)  {
-	 //TODO:
+	access_token ,  err := auth.GetToken(r.Header)
+	if err != nil{
+		respondWithError(w , 401 , fmt.Sprintf("Auth Error %s" , err))
+		return
+	}
+	
+	apiConf.db.CreateTokenBlacklist(r.Context(),
+	 database.CreateTokenBlacklistParams{
+		ID: uuid.New(),
+		UserID: user.ID,
+		Token: access_token,
+		ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
+		CreatedAt: time.Now().UTC(),
+	 },
+	)
 }
 
 func (apiConf apiConfig)DeleteUser(w http.ResponseWriter , r *http.Request , user database.User)  {

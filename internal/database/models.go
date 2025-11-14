@@ -69,6 +69,14 @@ type RefreshToken struct {
 	RevokedAt sql.NullTime
 }
 
+type TokenBlacklist struct {
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	Token     string
+	ExpiresAt time.Time
+	CreatedAt time.Time
+}
+
 type User struct {
 	ID        uuid.UUID
 	Name      string
