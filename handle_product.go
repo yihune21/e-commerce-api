@@ -87,3 +87,4 @@ func(apiConf apiConfig) GetProductByName(w http.ResponseWriter , r *http.Request
 
 	respondWithJSON(w , 200 , DatabaseProductToProduct(product))
 }
+
