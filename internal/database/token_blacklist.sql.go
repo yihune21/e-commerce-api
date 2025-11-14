@@ -44,3 +44,13 @@ func (q *Queries) CreateTokenBlacklist(ctx context.Context, arg CreateTokenBlack
 	)
 	return i, err
 }
+
+const deleteExpiredBlacklistTokens = `-- name: DeleteExpiredBlacklistTokens :exec
+DELETE FROM token_blacklist
+WHERE expires_at < NOW()
+`
+
+func (q *Queries) DeleteExpiredBlacklistTokens(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteExpiredBlacklistTokens)
+	return err
+}

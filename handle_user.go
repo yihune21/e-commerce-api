@@ -374,7 +374,7 @@ func (apiConf apiConfig)LogOut(w http.ResponseWriter , r *http.Request , user da
 		respondWithError(w , 401 , fmt.Sprintf("Auth Error %s" , err))
 		return
 	}
-	
+
 	apiConf.db.CreateTokenBlacklist(r.Context(),
 	 database.CreateTokenBlacklistParams{
 		ID: uuid.New(),
