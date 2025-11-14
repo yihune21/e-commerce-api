@@ -372,5 +372,9 @@ func (apiConf apiConfig)LogOut(w http.ResponseWriter , r *http.Request , user da
 }
 
 func (apiConf apiConfig)DeleteUser(w http.ResponseWriter , r *http.Request , user database.User)  {
-	
+	 err := apiConf.db.DeleteUserByUserId(r.Context() , user.ID)
+	 if err != nil {
+		respondWithError(w , 400 , fmt.Sprintf("Error with deleting user %v" , err))
+	    return
+	}
 }
