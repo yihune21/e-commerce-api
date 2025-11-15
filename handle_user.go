@@ -375,7 +375,7 @@ func (apiConf apiConfig)LogOut(w http.ResponseWriter , r *http.Request , user da
 		return
 	}
 
-	apiConf.db.CreateTokenBlacklist(r.Context(),
+	_ , err  = apiConf.db.CreateTokenBlacklist(r.Context(),
 	 database.CreateTokenBlacklistParams{
 		ID: uuid.New(),
 		UserID: user.ID,
@@ -384,6 +384,10 @@ func (apiConf apiConfig)LogOut(w http.ResponseWriter , r *http.Request , user da
 		CreatedAt: time.Now().UTC(),
 	 },
 	)
+	if err != nil {
+	   respondWithError(w , 401 , fmt.Sprintf("Error with creating token blacklist %s" , err))
+	   return
+	}
 }
 
 func (apiConf apiConfig)DeleteUser(w http.ResponseWriter , r *http.Request , user database.User)  {

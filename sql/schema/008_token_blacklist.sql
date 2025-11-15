@@ -1,5 +1,4 @@
 -- +goose Up
-
 CREATE TABLE token_blacklist (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -10,4 +9,3 @@ CREATE TABLE token_blacklist (
 
 -- +goose Down
 DROP TABLE token_blacklist;
-

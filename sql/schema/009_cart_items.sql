@@ -1,3 +1,4 @@
+
 -- +goose Up
 
 CREATE TABLE cart_items (
