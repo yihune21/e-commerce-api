@@ -155,7 +155,7 @@ func (apiConf apiConfig)Login(w http.ResponseWriter , r *http.Request){
 		respondWithError(w, 500, fmt.Sprintf("Failed to store refresh token: %v", err))
 		return
 	}
-
+    
     respondWithJSON(w , 200 ,ResponseToken(access_token, refresh_token))
 }
 
@@ -391,8 +391,28 @@ func (apiConf apiConfig)LogOut(w http.ResponseWriter , r *http.Request , user da
 }
 
 func (apiConf apiConfig)DeleteUser(w http.ResponseWriter , r *http.Request , user database.User)  {
-	 err := apiConf.db.DeleteUserByUserId(r.Context() , user.ID)
-	 if err != nil {
+	type parameters struct{
+		Id uuid.UUID `json:"id"`
+	}
+	
+	decode := json.NewDecoder(r.Body)
+	params := parameters{}
+	
+	err := decode.Decode(&params)
+	
+	if err != nil{
+		respondWithError(w , 400 , fmt.Sprintf("Error with decoding parameters %v",err))
+		return
+	}
+	userToBeDeleted , err := apiConf.db.GetUserById(r.Context(),params.Id)
+    if err != nil {
+		respondWithError(w,400,fmt.Sprintf("User not found %s" , err))
+		return
+	}
+
+	err = apiConf.db.DeleteUserByUserId(r.Context() ,userToBeDeleted.ID)
+    
+	if err != nil {
 		respondWithError(w , 400 , fmt.Sprintf("Error with deleting user %v" , err))
 	    return
 	}
