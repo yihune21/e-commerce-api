@@ -62,7 +62,7 @@ func main()  {
 	v1Router.Post("/delete-user",apiCfg.AdminMiddlewareAuth(apiCfg.DeleteUser))
 	v1Router.Post("/product",apiCfg.AdminMiddlewareAuth(apiCfg.CreateProduct))
     v1Router.Get("/product",apiCfg.GetProductByName)
-
+    v1Router.Post("/category",apiCfg.AdminMiddlewareAuth(apiCfg.NewCategory))
 	
 	
 	router.Mount("/v1",v1Router)
