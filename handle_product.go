@@ -28,7 +28,7 @@ func(apiConf apiConfig) CreateProduct(w http.ResponseWriter , r *http.Request , 
 	err := decode.Decode(&params)
     
 	if err != nil {
-		respondWithError(w ,400 , fmt.Sprintf("Errot with parsing json %v" ,err))
+		respondWithError(w ,400 , fmt.Sprintf("Error with parsing json %v" ,err))
 		return
 	}
     description := sql.NullString{}
@@ -68,7 +68,7 @@ func(apiConf apiConfig) CreateProduct(w http.ResponseWriter , r *http.Request , 
 }
 
 func(apiConf apiConfig) GetProductByName(w http.ResponseWriter , r *http.Request )  {
-    type parameters struct{
+    type parameters struct {
 		Name string `json:"name"`
 	}
 	decode := json.NewDecoder(r.Body)
@@ -76,7 +76,7 @@ func(apiConf apiConfig) GetProductByName(w http.ResponseWriter , r *http.Request
 
 	err :=  decode.Decode(&params)
 	if err != nil {
-		respondWithError(w ,400 , fmt.Sprintf("Errot with parsing json %v" ,err))
+		respondWithError(w ,400 , fmt.Sprintf("Error with parsing json %v" ,err))
 		return
 	}
 	product,err :=  apiConf.db.GetProductByName(r.Context() , params.Name)
@@ -86,5 +86,35 @@ func(apiConf apiConfig) GetProductByName(w http.ResponseWriter , r *http.Request
 	}
 
 	respondWithJSON(w , 200 , DatabaseProductToProduct(product))
+}
+
+func (apiConf apiConfig)UpdateProductPrice(w http.ResponseWriter , r *http.Request)  {
+   type parameters struct{
+	    Name string `json:"name"`
+		Price string `json:"price"`
+	}
+	decode := json.NewDecoder(r.Body)
+	params := parameters{}
+
+	err :=  decode.Decode(&params)
+	if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Error with parsing json %v" ,err))
+		return
+	}
+
+	product,err := apiConf.db.UpdateProductPrice(r.Context() ,database.UpdateProductPriceParams{
+		Price: params.Price,
+		Name: params.Name,
+	})
+	if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Couldn't update product %v" ,err))
+		return
+	}
+
+	respondWithJSON(w , 200 , DatabaseProductToProduct(product))
+
+}
+func (apiConf apiConfig)UpdateProductImage(w http.ResponseWriter , r *http.Request)  {
+	//TODO
 }
 

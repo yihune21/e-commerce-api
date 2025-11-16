@@ -65,9 +65,6 @@ const deleteProductByProductId = `-- name: DeleteProductByProductId :exec
 DELETE FROM products WHERE id = $1
 `
 
-// -- name: UpdateProductData:one
-// UPDATE products SET password = $1 WHERE id = $2
-// RETURNING *;
 func (q *Queries) DeleteProductByProductId(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, deleteProductByProductId, id)
 	return err
@@ -101,6 +98,34 @@ SELECT id, name, description, price, stock, category_id, image_url, is_active, c
 
 func (q *Queries) GetProductByName(ctx context.Context, name string) (Product, error) {
 	row := q.db.QueryRowContext(ctx, getProductByName, name)
+	var i Product
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.Price,
+		&i.Stock,
+		&i.CategoryID,
+		&i.ImageUrl,
+		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateProductPrice = `-- name: UpdateProductPrice :one
+UPDATE products SET price = $1 WHERE name = $2
+RETURNING id, name, description, price, stock, category_id, image_url, is_active, created_at, updated_at
+`
+
+type UpdateProductPriceParams struct {
+	Price string
+	Name  string
+}
+
+func (q *Queries) UpdateProductPrice(ctx context.Context, arg UpdateProductPriceParams) (Product, error) {
+	row := q.db.QueryRowContext(ctx, updateProductPrice, arg.Price, arg.Name)
 	var i Product
 	err := row.Scan(
 		&i.ID,

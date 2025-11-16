@@ -10,9 +10,10 @@ SELECT * FROM products WHERE id = $1;
 -- name: GetProductByName :one
 SELECT * FROM products WHERE name = $1;
 
--- -- name: UpdateProductData:one
--- UPDATE products SET password = $1 WHERE id = $2
--- RETURNING *;
+-- name: UpdateProductPrice :one
+UPDATE products SET price = $1 WHERE name = $2
+RETURNING *;
+
 -- name: DeleteProductByProductId :exec
 DELETE FROM products WHERE id = $1;
 
