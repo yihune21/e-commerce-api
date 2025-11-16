@@ -34,8 +34,8 @@ type Category struct {
 	Name        string
 	Description sql.NullString
 	ParentID    uuid.NullUUID
-	CreatedAt   sql.NullTime
-	UpdatedAt   sql.NullTime
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type Otp struct {

@@ -8,6 +8,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -23,8 +24,8 @@ type CreateCategotyParams struct {
 	Name        string
 	Description sql.NullString
 	ParentID    uuid.NullUUID
-	CreatedAt   sql.NullTime
-	UpdatedAt   sql.NullTime
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 func (q *Queries) CreateCategoty(ctx context.Context, arg CreateCategotyParams) (Category, error) {

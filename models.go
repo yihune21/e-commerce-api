@@ -98,8 +98,8 @@ func DatabaseCategoryToCategory(dbcat database.Category) Category  {
 		Id: dbcat.ID,
 		Name: dbcat.Name,
 		Description: dbcat.Description.String,
-		CreatedAt: dbcat.CreatedAt.Time,
-		UpdatedAt: dbcat.UpdatedAt.Time,
+		CreatedAt: dbcat.CreatedAt,
+		UpdatedAt: dbcat.UpdatedAt,
 	}
 }
 
