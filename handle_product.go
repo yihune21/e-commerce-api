@@ -88,7 +88,7 @@ func(apiConf apiConfig) GetProductByName(w http.ResponseWriter , r *http.Request
 	respondWithJSON(w , 200 , DatabaseProductToProduct(product))
 }
 
-func (apiConf apiConfig)UpdateProductPrice(w http.ResponseWriter , r *http.Request)  {
+func (apiConf apiConfig)UpdateProductPrice(w http.ResponseWriter , r *http.Request,admin database.User)  {
    type parameters struct{
 	    Name string `json:"name"`
 		Price string `json:"price"`
@@ -114,7 +114,7 @@ func (apiConf apiConfig)UpdateProductPrice(w http.ResponseWriter , r *http.Reque
 	respondWithJSON(w , 200 , DatabaseProductToProduct(product))
 
 }
-func (apiConf apiConfig)UpdateProductImage(w http.ResponseWriter , r *http.Request)  {
+func (apiConf apiConfig)UpdateProductImage(w http.ResponseWriter , r *http.Request,admin database.User)  {
 	type parameters struct{
 		Name string `json:"name"`
 	    ImageUrl string `json:"image_url"`
@@ -147,6 +147,30 @@ func (apiConf apiConfig)UpdateProductImage(w http.ResponseWriter , r *http.Reque
     
 
 	respondWithJSON(w, 200 , DatabaseProductToProduct(product))
+
+}
+
+func (apiConf apiConfig)DeleteProduct(w http.ResponseWriter , r *http.Request ,admin database.User)  {
+	type parameters struct{
+		Id uuid.UUID `json:"id"`
+	}
+    decode := json.NewDecoder(r.Body)
+	params := parameters{}
+
+	err :=  decode.Decode(&params)
+	if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Error with parsing json %v" ,err))
+		return
+	}
+
+	err = apiConf.db.DeleteProductByProductId(r.Context() , params.Id)
+
+	if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Error with deleting product %v" ,err))
+		return
+	}
+
+     
 
 }
 
