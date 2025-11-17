@@ -14,6 +14,10 @@ SELECT * FROM products WHERE name = $1;
 UPDATE products SET price = $1 WHERE name = $2
 RETURNING *;
 
+-- name: UpdateProductImage :one
+UPDATE products SET image_url = $1 WHERE name = $2
+RETURNING *;
+
 -- name: DeleteProductByProductId :exec
 DELETE FROM products WHERE id = $1;
 

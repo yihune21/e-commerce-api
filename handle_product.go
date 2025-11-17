@@ -38,8 +38,8 @@ func(apiConf apiConfig) CreateProduct(w http.ResponseWriter , r *http.Request , 
 	}
 	image_url := sql.NullString{}
 	if params.ImageUrl != ""{
-		description.String = params.ImageUrl
-		description.Valid = true
+		image_url.String = params.ImageUrl
+		image_url.Valid = true
 	}
 	created_at := sql.NullTime{}
 	created_at.Time = time.Now().UTC()
@@ -115,6 +115,38 @@ func (apiConf apiConfig)UpdateProductPrice(w http.ResponseWriter , r *http.Reque
 
 }
 func (apiConf apiConfig)UpdateProductImage(w http.ResponseWriter , r *http.Request)  {
-	//TODO
+	type parameters struct{
+		Name string `json:"name"`
+	    ImageUrl string `json:"image_url"`
+	}
+    decode := json.NewDecoder(r.Body)
+	params := parameters{}
+
+	err :=  decode.Decode(&params)
+	if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Error with parsing json %v" ,err))
+		return
+	}
+	image_url := sql.NullString{}
+
+	if params.ImageUrl != ""{
+		image_url.String = params.ImageUrl
+		image_url.Valid = true
+	}
+
+    
+	product , err := apiConf.db.UpdateProductImage(r.Context() , database.UpdateProductImageParams{
+			Name:params.Name,
+			ImageUrl: image_url,
+	})
+
+	if err != nil {
+		respondWithError(w ,201 ,fmt.Sprintf("Couldn't update the product image %v" ,err))
+		return
+	}
+    
+
+	respondWithJSON(w, 200 , DatabaseProductToProduct(product))
+
 }
 

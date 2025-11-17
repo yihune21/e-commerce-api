@@ -114,6 +114,34 @@ func (q *Queries) GetProductByName(ctx context.Context, name string) (Product, e
 	return i, err
 }
 
+const updateProductImage = `-- name: UpdateProductImage :one
+UPDATE products SET image_url = $1 WHERE name = $2
+RETURNING id, name, description, price, stock, category_id, image_url, is_active, created_at, updated_at
+`
+
+type UpdateProductImageParams struct {
+	ImageUrl sql.NullString
+	Name     string
+}
+
+func (q *Queries) UpdateProductImage(ctx context.Context, arg UpdateProductImageParams) (Product, error) {
+	row := q.db.QueryRowContext(ctx, updateProductImage, arg.ImageUrl, arg.Name)
+	var i Product
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.Price,
+		&i.Stock,
+		&i.CategoryID,
+		&i.ImageUrl,
+		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const updateProductPrice = `-- name: UpdateProductPrice :one
 UPDATE products SET price = $1 WHERE name = $2
 RETURNING id, name, description, price, stock, category_id, image_url, is_active, created_at, updated_at
