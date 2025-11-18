@@ -24,7 +24,7 @@ func VerifyOTP(sentOTP , recievedOTP string) bool {
     return false
 }
 
-func sendOTP(w http.ResponseWriter , r *http.Request)  {
+func sendOTPByEmail(w http.ResponseWriter , r *http.Request)  {
      //TODO
-	 
+	  
 }
