@@ -103,3 +103,51 @@ func DatabaseCategoryToCategory(dbcat database.Category) Category  {
 	}
 }
 
+type Cart struct{
+	Id uuid.UUID `json:"id"`
+	UserId uuid.UUID `json:"user_id"`
+	Status string    `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func DatabaseCartToCart(dbcart database.Cart) Cart  {
+	return Cart{
+		Id: dbcart.ID,
+		UserId: dbcart.UserID,
+		Status: dbcart.Status,
+		CreatedAt: dbcart.CreatedAt.Time,
+		UpdatedAt: dbcart.UpdatedAt.Time,
+	}
+}
+
+type CartItem struct{
+	Id uuid.UUID `json:"id"`
+	CartId uuid.UUID `json:"cart_id"`
+	ProductID uuid.UUID    `json:"product_id"`
+	Quantity  int       `json:"quantity"`
+	PriceAtAdd string  `json:"price_at_add"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func DatabaseCartItemToCartItem(dbcartI database.CartItem) CartItem  {
+	return CartItem{
+		Id: dbcartI.ID,
+		CartId:dbcartI.CartID,
+		ProductID:dbcartI.ProductID,
+		Quantity: int(dbcartI.Quantity),
+		PriceAtAdd: dbcartI.PriceAtAdd,
+		CreatedAt: dbcartI.CreatedAt.Time,
+		UpdatedAt: dbcartI.UpdatedAt.Time,
+	}
+}
+
+func DatabaseCartItemsToCartItems(dbcartIs []database.CartItem) []CartItem  {
+	cart_items := []CartItem{}
+	for _ , dbdbcartI := range dbcartIs{
+		cart_items = append(cart_items , DatabaseCartItemToCartItem(dbdbcartI))
+	}
+	
+	return cart_items
+}
