@@ -37,13 +37,18 @@ func (apiConf apiConfig) New(w http.ResponseWriter , r *http.Request){
 		respondWithError(w , 400 , err.Error())
 		return 
 	}
-
+    
     hashed_password , err := passwordhashing.HashPassword(params.Password)
 	if err != nil {
 		respondWithError(w,400 ,fmt.Sprintf("Error with password hashing %v",err))
 		return
 	}
-
+    
+    is_valid_emial , _ := IsValidEmail(params.Email)
+	if !is_valid_emial{
+		respondWithError(w , 400 , err.Error())
+        return
+	}
 
 	user , err := apiConf.db.CreateUser(r.Context() , database.CreateUserParams{
 		ID:uuid.New(),

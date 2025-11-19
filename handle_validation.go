@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"net/mail"
 	"unicode"
 )
 
@@ -37,5 +38,14 @@ func PasswordChecker(password string) error {
 	}
 	
 	return nil
+}
+
+func IsValidEmail(email string) (bool,error)  {
+	 _, err := mail.ParseAddress(email)
+	 if err != nil {
+		return false,errors.New("Invalid Email")
+	 }
+      
+	 return true,nil
 }
 
