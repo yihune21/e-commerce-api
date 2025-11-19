@@ -44,8 +44,8 @@ func (apiConf apiConfig) New(w http.ResponseWriter , r *http.Request){
 		return
 	}
     
-    is_valid_emial , _ := IsValidEmail(params.Email)
-	if !is_valid_emial{
+    is_valid_email , err := IsValidEmail(params.Email)
+	if !is_valid_email{
 		respondWithError(w , 400 , err.Error())
         return
 	}
@@ -85,14 +85,23 @@ func (apiConf apiConfig) NewAdmin(w http.ResponseWriter , r *http.Request ,Admin
 		respondWithError(w , 400 , fmt.Sprintf("Error with parsing json %v " ,err))
 		return 
 	}
-    if len(params.Password) < 8{
-		respondWithError(w , 400 , "Password should be equal or larger than 8")
+    err = PasswordChecker(params.Password)
+
+    if err != nil{
+		respondWithError(w , 400 , err.Error())
 		return 
 	}
+    
     hashed_password , err := passwordhashing.HashPassword(params.Password)
 	if err != nil {
 		respondWithError(w,400 ,fmt.Sprintf("Error with password hashing %v",err))
 		return
+	}
+    
+    is_valid_email , err := IsValidEmail(params.Email)
+	if !is_valid_email{
+		respondWithError(w , 400 , err.Error())
+        return
 	}
 
 
@@ -189,8 +198,10 @@ func (apiConf apiConfig) UpdateUserPassword(w http.ResponseWriter , r *http.Requ
 		respondWithError(w , 401 , "Incorrect current password!")
 		return
 	}
-    if len(params.NewPassword) < 8{
-		respondWithError(w , 400 , "Password should be equal or larger than 8")
+    err = PasswordChecker(params.NewPassword)
+
+    if err != nil{
+		respondWithError(w , 400 , err.Error())
 		return 
 	}
 	hash_password,err := passwordhashing.HashPassword(params.NewPassword)
@@ -356,6 +367,12 @@ func (apiConf apiConfig)ForgotPassword(w http.ResponseWriter , r *http.Request) 
 	if !is_matched{
 		respondWithError(w,401,"Incorrect OTP!")
 		return
+	}
+	err = PasswordChecker(params.NewPassword)
+
+    if err != nil{
+		respondWithError(w , 400 , err.Error())
+		return 
 	}
 	hashed_password,err := passwordhashing.HashPassword(params.NewPassword)
 	if err != nil {
