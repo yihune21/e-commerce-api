@@ -314,6 +314,7 @@ func (apiConf apiConfig)RequestForgotPassword(w http.ResponseWriter , r *http.Re
 	}
 
 	otp := generateSecureOTP(6)
+	
     db_otp,err := apiConf.db.CreateOtp(r.Context(), database.CreateOtpParams{
 		ID: uuid.New(),
 		Otp: otp,

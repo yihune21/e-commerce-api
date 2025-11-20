@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
-	"net/http"
 )
 
 func generateSecureOTP(length int) string {
@@ -22,9 +21,4 @@ func VerifyOTP(sentOTP , recievedOTP string) bool {
 		return true
 	}
     return false
-}
-
-func sendOTPByEmail(w http.ResponseWriter , r *http.Request)  {
-     //TODO
-	  
 }
