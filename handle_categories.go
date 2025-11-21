@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/yihune21/e-commerce-api/internal/database"
 )
 
@@ -47,4 +48,38 @@ func (apiCfg apiConfig) NewCategory(w http.ResponseWriter , r *http.Request , ad
     
     
     respondWithJSON(w , 200 , DatabaseCategoryToCategory(category))
+}
+
+func (apiCfg apiConfig)UpdateCategoryName(w http.ResponseWriter , r *http.Request , admin database.User)  {
+	type parameters struct{
+        Id uuid.UUID `json:"id"`
+		Name string `json:"name"`
+	}
+	
+	decode := json.NewDecoder(r.Body)
+	params := parameters{}
+
+	err := decode.Decode(&params)
+	if err != nil {
+		respondWithError(w, 400, fmt.Sprintf("Error parsing JSON: %v", err))
+		return
+	}
+
+	category ,err  := apiCfg.db.GetCategoryById(r.Context() , params.Id)
+    if err != nil {
+		respondWithError(w, 400, fmt.Sprintf("Couldn't found the category: %v", err))
+		return
+	}
+	dbcat , err := apiCfg.db.UpdateCategoryName(r.Context(), database.UpdateCategoryNameParams{
+		Name: params.Name,
+		ID: category.ID,
+	})
+	
+	if err != nil {
+		respondWithError(w, 400, fmt.Sprintf("Couldn't update the category: %v", err))
+		return
+	}
+
+	respondWithJSON(w,200 , DatabaseCategoryToCategory(dbcat))
+	
 }

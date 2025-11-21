@@ -48,3 +48,45 @@ func (q *Queries) CreateCategoty(ctx context.Context, arg CreateCategotyParams) 
 	)
 	return i, err
 }
+
+const getCategoryById = `-- name: GetCategoryById :one
+SELECT id, name, description, parent_id, created_at, updated_at FROM categories WHERE id = $1
+`
+
+func (q *Queries) GetCategoryById(ctx context.Context, id uuid.UUID) (Category, error) {
+	row := q.db.QueryRowContext(ctx, getCategoryById, id)
+	var i Category
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.ParentID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateCategoryName = `-- name: UpdateCategoryName :one
+UPDATE categories SET name = $1 WHERE id = $2
+RETURNING id, name, description, parent_id, created_at, updated_at
+`
+
+type UpdateCategoryNameParams struct {
+	Name string
+	ID   uuid.UUID
+}
+
+func (q *Queries) UpdateCategoryName(ctx context.Context, arg UpdateCategoryNameParams) (Category, error) {
+	row := q.db.QueryRowContext(ctx, updateCategoryName, arg.Name, arg.ID)
+	var i Category
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.ParentID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
