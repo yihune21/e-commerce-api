@@ -25,6 +25,7 @@ func (apiConf *apiConfig) middlewareAuth(handler authHandler) http.HandlerFunc{
             respondWithError(w , 401 ,"ACCESS TOKEN EXPIRED!")
 			return 
 		  }
+		  
 
 		  user_id,err := jwtAuth.ExtractUserIDFromToken(access_token)
 		  if err != nil{

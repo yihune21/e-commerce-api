@@ -85,6 +85,16 @@ func DatabaseProductToProduct(dbProduct database.Product)Product  {
 	}
 }
 
+func DatabaseProductsToProducts(dbProduct []database.Product)[]Product  {
+	products := []Product{}
+
+	for _,product := range dbProduct{
+		products = append(products, DatabaseProductToProduct(product))
+	}
+	return products
+}
+
+
 type Category struct{
     Id   uuid.UUID `json:"id"`
 	Name string `json:"name"`

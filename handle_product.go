@@ -87,6 +87,16 @@ func(apiConf apiConfig) GetProductByName(w http.ResponseWriter , r *http.Request
 
 	respondWithJSON(w , 200 , DatabaseProductToProduct(product))
 }
+func(apiConf apiConfig) GetAllProducts(w http.ResponseWriter , r *http.Request )  {
+    
+	products , err := apiConf.db.GetAllProducts(r.Context())
+	if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Couldn't find product %v" ,err))
+		return
+	}
+
+	respondWithJSON(w , 200 , DatabaseProductsToProducts(products))
+}
 
 func (apiConf apiConfig)UpdateProductPrice(w http.ResponseWriter , r *http.Request,admin database.User)  {
    type parameters struct{

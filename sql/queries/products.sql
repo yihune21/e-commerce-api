@@ -10,6 +10,9 @@ SELECT * FROM products WHERE id = $1;
 -- name: GetProductByName :one
 SELECT * FROM products WHERE name = $1;
 
+-- name: GetAllProducts :many
+SELECT * FROM products;
+
 -- name: UpdateProductPrice :one
 UPDATE products SET price = $1 WHERE name = $2
 RETURNING *;
