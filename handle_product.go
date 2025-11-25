@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 	"github.com/yihune21/e-commerce-api/internal/database"
 )
@@ -161,19 +162,18 @@ func (apiConf apiConfig)UpdateProductImage(w http.ResponseWriter , r *http.Reque
 }
 
 func (apiConf apiConfig)DeleteProduct(w http.ResponseWriter , r *http.Request ,admin database.User)  {
-	type parameters struct{
-		Id uuid.UUID `json:"id"`
-	}
-    decode := json.NewDecoder(r.Body)
-	params := parameters{}
-
-	err :=  decode.Decode(&params)
-	if err != nil {
-		respondWithError(w ,400 , fmt.Sprintf("Error with parsing json %v" ,err))
+	idStr := chi.URLParam(r,"id")
+	if idStr == "" {
+		respondWithError(w ,400 , "Missing product id")
 		return
 	}
 
-	err = apiConf.db.DeleteProductByProductId(r.Context() , params.Id)
+	id,err := uuid.Parse(idStr)
+    if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Error with parsing product id %v" ,err))
+		return
+	}
+	err = apiConf.db.DeleteProductByProductId(r.Context() , id)
 
 	if err != nil {
 		respondWithError(w ,400 , fmt.Sprintf("Error with deleting product %v" ,err))
