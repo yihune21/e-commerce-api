@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 	"github.com/yihune21/e-commerce-api/internal/database"
 )
@@ -52,7 +53,6 @@ func (apiCfg apiConfig) NewCategory(w http.ResponseWriter , r *http.Request , ad
 
 func (apiCfg apiConfig)UpdateCategoryName(w http.ResponseWriter , r *http.Request , admin database.User)  {
 	type parameters struct{
-        Id uuid.UUID `json:"id"`
 		Name string `json:"name"`
 	}
 	
@@ -65,7 +65,19 @@ func (apiCfg apiConfig)UpdateCategoryName(w http.ResponseWriter , r *http.Reques
 		return
 	}
 
-	category ,err  := apiCfg.db.GetCategoryById(r.Context() , params.Id)
+	idStr := chi.URLParam(r,"id")
+
+	if idStr == ""{
+		respondWithError(w  , 400 , "Missing category id")
+	}
+
+    id , err := uuid.Parse(idStr)
+
+	if err!=  nil{
+		respondWithError(w , 400 , fmt.Sprintf("Error with parsing categpry id %v" ,err))
+	}
+
+	category ,err  := apiCfg.db.GetCategoryById(r.Context() , id)
     if err != nil {
 		respondWithError(w, 400, fmt.Sprintf("Couldn't found the category: %v", err))
 		return
