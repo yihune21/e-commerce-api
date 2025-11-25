@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 	"github.com/yihune21/e-commerce-api/internal/auth"
 	"github.com/yihune21/e-commerce-api/internal/database"
@@ -418,20 +419,18 @@ func (apiConf apiConfig)LogOut(w http.ResponseWriter , r *http.Request , user da
 }
 
 func (apiConf apiConfig)DeleteUser(w http.ResponseWriter , r *http.Request , user database.User)  {
-	type parameters struct{
-		Id uuid.UUID `json:"id"`
-	}
-	
-	decode := json.NewDecoder(r.Body)
-	params := parameters{}
-	
-	err := decode.Decode(&params)
-	
-	if err != nil{
-		respondWithError(w , 400 , fmt.Sprintf("Error with decoding parameters %v",err))
+	idStr := chi.URLParam(r, "id")
+	if idStr == "" {
+		respondWithError(w, 400, "missing user id")
 		return
 	}
-	userToBeDeleted , err := apiConf.db.GetUserById(r.Context(),params.Id)
+
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		respondWithError(w, 400, "invalid UUID format")
+		return
+	}
+	userToBeDeleted , err := apiConf.db.GetUserById(r.Context(),id)
     if err != nil {
 		respondWithError(w,400,fmt.Sprintf("User not found %s" , err))
 		return

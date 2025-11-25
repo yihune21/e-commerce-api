@@ -59,7 +59,7 @@ func main()  {
 	v1Router.Patch("/update-password",apiCfg.middlewareAuth(apiCfg.UpdateUserPassword))
 	v1Router.Post("/send-otp",apiCfg.RequestForgotPassword)
     v1Router.Post("/verify-otp",apiCfg.ForgotPassword)
-	v1Router.Post("/delete-user",apiCfg.AdminMiddlewareAuth(apiCfg.DeleteUser))
+	v1Router.Post("/delete-user/{id}",apiCfg.AdminMiddlewareAuth(apiCfg.DeleteUser))
 	v1Router.Post("/product",apiCfg.AdminMiddlewareAuth(apiCfg.CreateProduct))
     v1Router.Get("/product",apiCfg.GetProductByName)
 	v1Router.Get("/products",apiCfg.GetAllProducts)
