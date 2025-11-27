@@ -69,6 +69,7 @@ func main()  {
     v1Router.Post("/category",apiCfg.AdminMiddlewareAuth(apiCfg.NewCategory))
 	v1Router.Patch("/category/{id}",apiCfg.AdminMiddlewareAuth(apiCfg.UpdateCategoryName))
 	v1Router.Post("/cart",apiCfg.middlewareAuth(apiCfg.AddToCart))
+	v1Router.Get("/cart", apiCfg.middlewareAuth(apiCfg.GetCart))
 
 	
 	router.Mount("/v1",v1Router)

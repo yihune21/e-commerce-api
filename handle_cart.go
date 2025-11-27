@@ -100,3 +100,21 @@ func (apiCfg apiConfig) AddToCart(w http.ResponseWriter, r *http.Request, user d
 
 	respondWithJSON(w, 200, response)
 }
+
+func (apiCfg apiConfig) GetCart(w http.ResponseWriter, r *http.Request, user database.User)  {
+	  
+	  cartId , err := apiCfg.db.GetCartByUserId(r.Context() , user.ID)
+	  if err !=  nil{
+		respondWithError(w , 400 , fmt.Sprintf("Couldn't find cart %v" , err))
+		return
+	  }
+	  cart , err := apiCfg.db.GetCartItemByCartId(r.Context() , cartId.ID)
+
+	  if err !=  nil{
+		respondWithError(w , 400 , fmt.Sprintf("Couldn't find cart items %v" , err))
+		return
+	  }
+
+	  respondWithJSON(w , 200 , DatabaseCartItemsToCartItems(cart))
+	
+}
