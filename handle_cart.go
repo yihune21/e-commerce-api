@@ -141,3 +141,37 @@ func (apiCfg apiConfig) RemoveFromCart(w http.ResponseWriter, r *http.Request, u
     
 	respondWithJSON(w , 200 , struct{}{})
 }
+
+func  (apiCfg apiConfig)UpdateCartItem(w http.ResponseWriter, r *http.Request, user database.User)  {
+	idStr := chi.URLParam(r,"productId")
+	if idStr == "" {
+		respondWithError(w ,400 , "Missing product id")
+		return
+	}
+
+	id,err := uuid.Parse(idStr)
+    if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Error with parsing product id %v" ,err))
+		return
+	}
+    cart ,  err := apiCfg.db.GetCartByUserId(r.Context(),user.ID)
+	if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Couldn't find cart %v" ,err))
+		return
+	}
+	cart_item ,err := apiCfg.db.GetCartItemByCartIdAndProductId(r.Context() , database.GetCartItemByCartIdAndProductIdParams{
+		CartID: cart.ID,
+		ProductID: id,
+	})
+	if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Couldn't find cart item %v" ,err))
+		return
+	}
+    new_cart_item , err :=  apiCfg.db.UpdateCartItemQuantity(r.Context() , database.UpdateCartItemQuantityParams{
+		ID: id,
+		Quantity:cart_item.Quantity + 1,
+	})
+
+	respondWithJSON(w , 200 , DatabaseCartItemToCartItem(new_cart_item))
+
+}
