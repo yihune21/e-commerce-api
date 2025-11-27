@@ -111,6 +111,15 @@ func (q *Queries) GetCartItemByCartIdAndProductId(ctx context.Context, arg GetCa
 	return i, err
 }
 
+const removeCartItemFromCart = `-- name: RemoveCartItemFromCart :exec
+DELETE FROM cart_items WHERE product_id = $1
+`
+
+func (q *Queries) RemoveCartItemFromCart(ctx context.Context, productID uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, removeCartItemFromCart, productID)
+	return err
+}
+
 const updateCartItemQuantity = `-- name: UpdateCartItemQuantity :one
 UPDATE cart_items SET quantity = $1 WHERE id = $2
 

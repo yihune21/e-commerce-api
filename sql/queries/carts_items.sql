@@ -14,5 +14,6 @@ UPDATE cart_items SET quantity = $1 WHERE id = $2
 
 RETURNING *;
 
-
+-- name: RemoveCartItemFromCart :exec
+DELETE FROM cart_items WHERE product_id = $1;
 

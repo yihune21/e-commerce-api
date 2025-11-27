@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 	"github.com/yihune21/e-commerce-api/internal/auth"
 	"github.com/yihune21/e-commerce-api/internal/database"
@@ -117,4 +118,26 @@ func (apiCfg apiConfig) GetCart(w http.ResponseWriter, r *http.Request, user dat
 
 	  respondWithJSON(w , 200 , DatabaseCartItemsToCartItems(cart))
 	
+}
+
+func (apiCfg apiConfig) RemoveFromCart(w http.ResponseWriter, r *http.Request, user database.User)  {
+	idStr := chi.URLParam(r,"productId")
+	if idStr == "" {
+		respondWithError(w ,400 , "Missing product id")
+		return
+	}
+
+	id,err := uuid.Parse(idStr)
+    if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Error with parsing product id %v" ,err))
+		return
+	}
+	
+	err = apiCfg.db.RemoveCartItemFromCart(r.Context() , id)
+    if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Couldn't remove the product %v" ,err))
+		return
+	}
+    
+	respondWithJSON(w , 200 , struct{}{})
 }
