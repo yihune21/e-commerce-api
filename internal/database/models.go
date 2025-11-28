@@ -38,6 +38,25 @@ type Category struct {
 	UpdatedAt   time.Time
 }
 
+type Order struct {
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	Status    string
+	Total     string
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
+}
+
+type OrderItem struct {
+	ID         uuid.UUID
+	OrderID    uuid.UUID
+	ProductID  uuid.UUID
+	Quantity   int32
+	UnitPrice  string
+	TotalPrice string
+	CreatedAt  sql.NullTime
+}
+
 type Otp struct {
 	ID        uuid.UUID
 	Otp       string
