@@ -39,12 +39,13 @@ type Category struct {
 }
 
 type Order struct {
-	ID        uuid.UUID
-	UserID    uuid.UUID
-	Status    string
-	Total     string
-	CreatedAt sql.NullTime
-	UpdatedAt sql.NullTime
+	ID            uuid.UUID
+	UserID        uuid.UUID
+	OrderStatus   string
+	Total         string
+	PaymentStatus sql.NullString
+	CreatedAt     sql.NullTime
+	UpdatedAt     sql.NullTime
 }
 
 type OrderItem struct {

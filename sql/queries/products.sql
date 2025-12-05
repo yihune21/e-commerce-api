@@ -21,6 +21,9 @@ RETURNING *;
 UPDATE products SET image_url = $1 WHERE name = $2
 RETURNING *;
 
+-- name: UpdateProductStock :one
+UPDATE products SET stock = $1 WHERE id = $2
+RETURNING *;
+
 -- name: DeleteProductByProductId :exec
 DELETE FROM products WHERE id = $1;
-

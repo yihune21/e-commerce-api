@@ -13,26 +13,28 @@ import (
 )
 
 const createOrder = `-- name: CreateOrder :one
-INSERT INTO orders (id , user_id , status , total , created_at , updated_at) 
-values($1,$2,$3,$4,$5,$6)
-RETURNING id, user_id, status, total, created_at, updated_at
+INSERT INTO orders (id , user_id , order_status , total ,payment_status, created_at , updated_at) 
+values($1,$2,$3,$4,$5,$6 , $7)
+RETURNING id, user_id, order_status, total, payment_status, created_at, updated_at
 `
 
 type CreateOrderParams struct {
-	ID        uuid.UUID
-	UserID    uuid.UUID
-	Status    string
-	Total     string
-	CreatedAt sql.NullTime
-	UpdatedAt sql.NullTime
+	ID            uuid.UUID
+	UserID        uuid.UUID
+	OrderStatus   string
+	Total         string
+	PaymentStatus sql.NullString
+	CreatedAt     sql.NullTime
+	UpdatedAt     sql.NullTime
 }
 
 func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order, error) {
 	row := q.db.QueryRowContext(ctx, createOrder,
 		arg.ID,
 		arg.UserID,
-		arg.Status,
+		arg.OrderStatus,
 		arg.Total,
+		arg.PaymentStatus,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
@@ -40,8 +42,9 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
-		&i.Status,
+		&i.OrderStatus,
 		&i.Total,
+		&i.PaymentStatus,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

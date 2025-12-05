@@ -7,7 +7,7 @@ CREATE TABLE order_items (
     quantity INT NOT NULL CHECK (quantity > 0),
     unit_price NUMERIC(10,2) NOT NULL,   
     total_price NUMERIC(10,2) NOT NULL, 
-    created_at TIMESTAMP DEFAULT NOW()
+    created_at TIMESTAMP 
 );
 
 -- +goose Down
