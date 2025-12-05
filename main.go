@@ -72,7 +72,9 @@ func main()  {
 	v1Router.Get("/cart", apiCfg.middlewareAuth(apiCfg.GetCart))
     v1Router.Delete("/cart/{productId}", apiCfg.middlewareAuth(apiCfg.RemoveFromCart))
     v1Router.Patch("/cart/{productId}", apiCfg.middlewareAuth(apiCfg.UpdateCartItem))
-	
+	v1Router.Post("/order",apiCfg.middlewareAuth(apiCfg.CreateOrder))
+    
+
 	router.Mount("/v1",v1Router)
 
 
