@@ -161,3 +161,35 @@ func DatabaseCartItemsToCartItems(dbcartIs []database.CartItem) []CartItem  {
 	
 	return cart_items
 }
+
+type Order struct{
+	Id uuid.UUID `json:"id"`
+    UserId uuid.UUID `json:"user_id"`
+	OrderStatus string `json:"order_status"`
+	Total   string `json:"total"`
+	PaymentStatus string `json:"payment_status"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at"`
+}
+
+func DatabaseOrderToOrder(dbOrder database.Order) Order {
+	return Order{
+		Id: dbOrder.ID,
+		UserId: dbOrder.UserID,
+		OrderStatus: dbOrder.OrderStatus,
+		Total: dbOrder.Total,
+		PaymentStatus: dbOrder.PaymentStatus.String,
+		CreatedAt: dbOrder.CreatedAt.Time,
+		UpdatedAt: dbOrder.UpdatedAt.Time,
+	}
+}
+
+
+func DatabaseOrdersToOrders(dbOrders []database.Order) []Order {
+	orders := []Order{}
+	for _ , dbOrder := range dbOrders{
+		orders = append(orders , DatabaseOrderToOrder(dbOrder))
+	}
+	
+	return orders
+}

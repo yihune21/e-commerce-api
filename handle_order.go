@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 	"github.com/yihune21/e-commerce-api/internal/database"
 )
@@ -95,4 +96,72 @@ func(apiCfg apiConfig) CreateOrder(w http.ResponseWriter , r *http.Request, user
 
     
     
+}
+
+func (apiCfg apiConfig)GetAllOrders(w http.ResponseWriter , r *http.Request, admin database.User)  {
+    orders ,  err := apiCfg.db.GetAllOrders(r.Context())
+    if  err != nil {
+        respondWithError(w,400 , fmt.Sprintf("Couldn't found orders %v",err))
+        return
+    }
+
+    respondWithJSON(w , 200 , DatabaseOrdersToOrders(orders))
+}
+
+func (apiCfg apiConfig)GetAllOrdersByUserId(w http.ResponseWriter , r *http.Request, user database.User)  {
+    orders ,  err := apiCfg.db.GetOrdersByUserId(r.Context(),user.ID)
+    if  err != nil {
+        respondWithError(w,400 , fmt.Sprintf("Couldn't found orders %v",err))
+        return
+    }
+
+    respondWithJSON(w , 200 , DatabaseOrdersToOrders(orders))
+}
+
+func (apiCfg apiConfig)GetOrderDetail(w http.ResponseWriter , r *http.Request, user database.User)  {
+    idStr := chi.URLParam(r,"id")
+	if idStr == "" {
+		respondWithError(w ,400 , "Missing order id")
+		return
+	}
+
+	id ,err := uuid.Parse(idStr)
+    if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Error with parsing order id %v" ,err))
+		return
+	}
+
+    order ,  err := apiCfg.db.GetOrder(r.Context() ,id )
+    if  err != nil {
+        respondWithError(w,400 , fmt.Sprintf("Couldn't found order %v",err))
+        return
+    }
+
+    respondWithJSON(w , 200 , DatabaseOrderToOrder(order))
+}
+
+
+func (apiCfg apiConfig)UpdateOrderStatus(w http.ResponseWriter , r *http.Request, admin database.User)  {
+    idStr := chi.URLParam(r,"id")
+	if idStr == "" {
+		respondWithError(w ,400 , "Missing order id")
+		return
+	}
+
+	id ,err := uuid.Parse(idStr)
+    if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Error with parsing order id %v" ,err))
+		return
+	}
+
+    order ,  err := apiCfg.db.UpdateOrderStatus(r.Context() ,database.UpdateOrderStatusParams{
+        OrderStatus: "Delivered",
+        ID: id,
+    } )
+    if  err != nil {
+        respondWithError(w,400 , fmt.Sprintf("Couldn't found order %v",err))
+        return
+    }
+
+    respondWithJSON(w , 200 , DatabaseOrderToOrder(order))
 }

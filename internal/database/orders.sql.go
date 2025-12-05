@@ -50,3 +50,117 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order
 	)
 	return i, err
 }
+
+const getAllOrders = `-- name: GetAllOrders :many
+SELECT id, user_id, order_status, total, payment_status, created_at, updated_at FROM orders
+`
+
+func (q *Queries) GetAllOrders(ctx context.Context) ([]Order, error) {
+	rows, err := q.db.QueryContext(ctx, getAllOrders)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.OrderStatus,
+			&i.Total,
+			&i.PaymentStatus,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getOrder = `-- name: GetOrder :one
+SELECT id, user_id, order_status, total, payment_status, created_at, updated_at FROM orders WHERE id = $1
+`
+
+func (q *Queries) GetOrder(ctx context.Context, id uuid.UUID) (Order, error) {
+	row := q.db.QueryRowContext(ctx, getOrder, id)
+	var i Order
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.OrderStatus,
+		&i.Total,
+		&i.PaymentStatus,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getOrdersByUserId = `-- name: GetOrdersByUserId :many
+SELECT id, user_id, order_status, total, payment_status, created_at, updated_at FROM orders WHERE user_id = $1
+`
+
+func (q *Queries) GetOrdersByUserId(ctx context.Context, userID uuid.UUID) ([]Order, error) {
+	rows, err := q.db.QueryContext(ctx, getOrdersByUserId, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.OrderStatus,
+			&i.Total,
+			&i.PaymentStatus,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateOrderStatus = `-- name: UpdateOrderStatus :one
+UPDATE orders SET order_status = $1 WHERE id = $2
+RETURNING id, user_id, order_status, total, payment_status, created_at, updated_at
+`
+
+type UpdateOrderStatusParams struct {
+	OrderStatus string
+	ID          uuid.UUID
+}
+
+func (q *Queries) UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) (Order, error) {
+	row := q.db.QueryRowContext(ctx, updateOrderStatus, arg.OrderStatus, arg.ID)
+	var i Order
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.OrderStatus,
+		&i.Total,
+		&i.PaymentStatus,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}

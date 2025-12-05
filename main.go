@@ -18,12 +18,10 @@ type apiConfig struct{
 }
 
 func main()  {
-	//Load env var
     godotenv.Load(".env")
 	port := os.Getenv("PORT")
     db_url := os.Getenv("DB_URL")
 	
-    //Begin DB connection
 	db_conn , err := utils.ConnectDb(db_url)
 	if err != nil{
 		log.Fatal(err)
@@ -34,7 +32,6 @@ func main()  {
 	fmt.Println("Database connected succefully!")
 
 
-    //server router
 	router := chi.NewRouter()
 	router.Use(cors.Handler(
 		cors.Options{
@@ -59,21 +56,28 @@ func main()  {
 	v1Router.Patch("/update-password",apiCfg.middlewareAuth(apiCfg.UpdateUserPassword))
 	v1Router.Post("/send-otp",apiCfg.RequestForgotPassword)
     v1Router.Post("/verify-otp",apiCfg.ForgotPassword)
-	v1Router.Post("/delete-user/{id}",apiCfg.AdminMiddlewareAuth(apiCfg.DeleteUser))
-	v1Router.Post("/product",apiCfg.AdminMiddlewareAuth(apiCfg.CreateProduct))
+	v1Router.Post("/admin/delete-user/{id}",apiCfg.AdminMiddlewareAuth(apiCfg.DeleteUser))
+	v1Router.Post("/admin/product",apiCfg.AdminMiddlewareAuth(apiCfg.CreateProduct))
     v1Router.Get("/product",apiCfg.GetProductByName)
 	v1Router.Get("/products",apiCfg.GetAllProducts)
-	v1Router.Patch("/product-price",apiCfg.AdminMiddlewareAuth(apiCfg.UpdateProductPrice))
-	v1Router.Patch("/product-image",apiCfg.AdminMiddlewareAuth(apiCfg.UpdateProductImage))
-  	v1Router.Delete("/product/{id}",apiCfg.AdminMiddlewareAuth(apiCfg.DeleteProduct))
-    v1Router.Post("/category",apiCfg.AdminMiddlewareAuth(apiCfg.NewCategory))
-	v1Router.Patch("/category/{id}",apiCfg.AdminMiddlewareAuth(apiCfg.UpdateCategoryName))
+	v1Router.Patch("/admin/product-price",apiCfg.AdminMiddlewareAuth(apiCfg.UpdateProductPrice))
+	v1Router.Patch("/admin/product-image",apiCfg.AdminMiddlewareAuth(apiCfg.UpdateProductImage))
+  	v1Router.Delete("/admin/product/{id}",apiCfg.AdminMiddlewareAuth(apiCfg.DeleteProduct))
+    v1Router.Post("/admin/category",apiCfg.AdminMiddlewareAuth(apiCfg.NewCategory))
+	v1Router.Patch("/admin/category/{id}",apiCfg.AdminMiddlewareAuth(apiCfg.UpdateCategoryName))
 	v1Router.Post("/cart",apiCfg.middlewareAuth(apiCfg.AddToCart))
 	v1Router.Get("/cart", apiCfg.middlewareAuth(apiCfg.GetCart))
     v1Router.Delete("/cart/{productId}", apiCfg.middlewareAuth(apiCfg.RemoveFromCart))
     v1Router.Patch("/cart/{productId}", apiCfg.middlewareAuth(apiCfg.UpdateCartItem))
 	v1Router.Post("/order",apiCfg.middlewareAuth(apiCfg.CreateOrder))
-    
+    v1Router.Get("/admin/orders",apiCfg.AdminMiddlewareAuth(apiCfg.GetAllOrders))
+	v1Router.Get("/orders",apiCfg.middlewareAuth(apiCfg.GetAllOrdersByUserId))
+    v1Router.Get("/order/{id}",apiCfg.middlewareAuth(apiCfg.GetOrderDetail))
+    v1Router.Get("/admin/order/{id}",apiCfg.AdminMiddlewareAuth(apiCfg.GetOrderDetail))
+    v1Router.Patch("/admin/order/{id}",apiCfg.AdminMiddlewareAuth(apiCfg.UpdateOrderStatus))
+
+
+
 
 	router.Mount("/v1",v1Router)
 
