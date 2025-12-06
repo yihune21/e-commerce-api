@@ -140,7 +140,6 @@ func (apiCfg apiConfig)GetOrderDetail(w http.ResponseWriter , r *http.Request, u
     respondWithJSON(w , 200 , DatabaseOrderToOrder(order))
 }
 
-
 func (apiCfg apiConfig)UpdateOrderStatus(w http.ResponseWriter , r *http.Request, admin database.User)  {
     idStr := chi.URLParam(r,"id")
 	if idStr == "" {
