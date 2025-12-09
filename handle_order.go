@@ -10,7 +10,9 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/google/uuid"
+	"github.com/yihune21/e-commerce-api/internal/auth"
 	"github.com/yihune21/e-commerce-api/internal/database"
+	jwtAuth "github.com/yihune21/e-commerce-api/jwt"
 )
 
 func(apiCfg apiConfig) CreateOrder(w http.ResponseWriter , r *http.Request, user database.User)  {
@@ -30,6 +32,18 @@ func(apiCfg apiConfig) CreateOrder(w http.ResponseWriter , r *http.Request, user
         respondWithError(w , 400,fmt.Sprintf("Error with parsing a json %v",err))
         return
     }
+    
+    access_token , err := auth.GetToken(r.Header)
+    if err != nil{
+       respondWithError(w , 400,fmt.Sprintf("Error with getting access token %v",err))
+       return
+    }
+    user_id,err := jwtAuth.ExtractUserIDFromToken(access_token)
+    if err != nil{
+        respondWithError(w , 400 , fmt.Sprintf("Error with extracting user id %v",err))
+        return
+    }
+    cart , err := apiCfg.db.GetCartByUserId(r.Context(),user_id)
 
     total := 0.0
     for _,item :=range params.Items {
@@ -91,11 +105,9 @@ func(apiCfg apiConfig) CreateOrder(w http.ResponseWriter , r *http.Request, user
         
 
     }
-
-
-
+    apiCfg.db.DeleteCartItemByCartId(r.Context(), cart.ID)
     
-    
+    respondWithJSON(w,200 , DatabaseOrderToOrder(order))
 }
 
 func (apiCfg apiConfig)GetAllOrders(w http.ResponseWriter , r *http.Request, admin database.User)  {

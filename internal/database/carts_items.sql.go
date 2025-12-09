@@ -52,6 +52,43 @@ func (q *Queries) CreateCartItem(ctx context.Context, arg CreateCartItemParams) 
 	return i, err
 }
 
+const deleteCartItemByCartId = `-- name: DeleteCartItemByCartId :many
+DELETE FROM cart_items WHERE cart_id = $1
+
+RETURNING id, cart_id, product_id, quantity, price_at_add, created_at, updated_at
+`
+
+func (q *Queries) DeleteCartItemByCartId(ctx context.Context, cartID uuid.UUID) ([]CartItem, error) {
+	rows, err := q.db.QueryContext(ctx, deleteCartItemByCartId, cartID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CartItem
+	for rows.Next() {
+		var i CartItem
+		if err := rows.Scan(
+			&i.ID,
+			&i.CartID,
+			&i.ProductID,
+			&i.Quantity,
+			&i.PriceAtAdd,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCartItemByCartId = `-- name: GetCartItemByCartId :many
 SELECT id, cart_id, product_id, quantity, price_at_add, created_at, updated_at FROM cart_items WHERE cart_id = $1
 `

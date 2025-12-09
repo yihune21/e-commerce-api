@@ -17,3 +17,7 @@ RETURNING *;
 -- name: RemoveCartItemFromCart :exec
 DELETE FROM cart_items WHERE product_id = $1;
 
+-- name: DeleteCartItemByCartId :many
+DELETE FROM cart_items WHERE cart_id = $1
+
+RETURNING *;
