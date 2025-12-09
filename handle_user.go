@@ -61,7 +61,7 @@ func (apiConf apiConfig) New(w http.ResponseWriter , r *http.Request){
 		UpdatedAt: time.Now().UTC(),
 	})
 	if err != nil {
-		respondWithError(w , 201 , fmt.Sprintf("Couldn't able to create user %v",err))
+		respondWithError(w , 400 , fmt.Sprintf("Couldn't able to create user %v",err))
 		return
 	}
 
@@ -116,7 +116,7 @@ func (apiConf apiConfig) NewAdmin(w http.ResponseWriter , r *http.Request ,Admin
 		UpdatedAt: time.Now().UTC(),
 	})
 	if err != nil {
-		respondWithError(w , 201 , fmt.Sprintf("Couldn't able to create user %v",err))
+		respondWithError(w , 400 , fmt.Sprintf("Couldn't able to create user %v",err))
 		return
 	}
 
