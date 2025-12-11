@@ -28,7 +28,7 @@ func (apiConf *apiConfig) middlewareAuth(handler authHandler) http.HandlerFunc{
 		  
 		  _ , err = apiConf.db.GetToken(r.Context(),access_token)
 
-		  if err != nil{
+		  if err == nil{
 			respondWithError(w , 400 , fmt.Sprintf("Token is blacklisted.%v",err))
 			return
 		  }
@@ -65,7 +65,7 @@ func (apiConf *apiConfig) AdminMiddlewareAuth(handler authHandler) http.HandlerF
 		  }
 		  _ , err = apiConf.db.GetToken(r.Context(),access_token)
 
-		  if err != nil{
+		  if err == nil{
 			respondWithError(w , 400 , fmt.Sprintf("Token is blacklisted.%v",err))
 			return
 		  }
