@@ -162,17 +162,17 @@ func (apiConf apiConfig)Login(w http.ResponseWriter , r *http.Request){
 	access_token := jwtAuth.GenerateAccessToken(user)
 	refresh_token := jwtAuth.GenerateRefreshToken(user)
     
-	refresh_token_hash,err := passwordhashing.HashPassword(refresh_token)
-    if err != nil {
-		respondWithError(w, 400, fmt.Sprintf("Failed to hash refresh token: %v", err))
-		return
-	}
+	// refresh_token_hash,err := passwordhashing.HashPassword(refresh_token)
+    // if err != nil {
+	// 	respondWithError(w, 400, fmt.Sprintf("Failed to hash refresh token: %v", err))
+	// 	return
+	// }
 
 	// Store refresh token in database
 	_, err = apiConf.db.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
 		ID: uuid.New(),
 		UserID: user.ID,
-		Token: refresh_token_hash,
+		Token: refresh_token,
 		ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
 		CreatedAt: time.Now().UTC(),
 	})
@@ -220,7 +220,7 @@ func (apiConf apiConfig) UpdateUserPassword(w http.ResponseWriter , r *http.Requ
 		Password: hash_password,
 		ID: user.ID,
 	})
-    
+    apiConf.db.RevokeAllUserRefreshTokens(r.Context(),user.ID)
 	fmt.Printf("Dear user %s,password updated successfully!\n",user.Name)
 	respondWithJSON(w,200,databaseUserToUser(user))
 
@@ -242,20 +242,20 @@ func (apiConf apiConfig) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Verify the refresh token and extract user ID
-    hashed_params_refresh_token ,err := passwordhashing.HashPassword(params.RefreshToken)
-	if err != nil {
-		respondWithError(w, 500, "Failed to hash  refresh token")
-		return
-	}
+    // hashed_params_refresh_token ,err := passwordhashing.HashPassword(params.RefreshToken)
+	// if err != nil {
+	// 	respondWithError(w, 500, "Failed to hash  refresh token")
+	// 	return
+	// }
 	
-	userID, err := jwtAuth.VerifyRefreshToken(hashed_params_refresh_token)
+	userID, err := jwtAuth.VerifyRefreshToken(params.RefreshToken)
 	if err != nil {
 		respondWithError(w, 401, fmt.Sprintf("Invalid refresh token: %v", err))
 		return
 	}
 
 	// Check if refresh token exists in database and is not revoked
-	dbToken, err := apiConf.db.GetRefreshTokenByToken(r.Context(), hashed_params_refresh_token)
+	dbToken, err := apiConf.db.GetRefreshTokenByToken(r.Context(), params.RefreshToken)
 	if err != nil {
 		respondWithError(w, 401, "Refresh token not found or expired")
 		return
@@ -281,14 +281,14 @@ func (apiConf apiConfig) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	newRefreshToken := jwtAuth.GenerateRefreshToken(user)
     
 	
-	hashed_new_refresh_token , err := passwordhashing.HashPassword(newRefreshToken)
-	if err != nil {
-		respondWithError(w, 500, "Failed to hash  refresh token")
-		return
-	}
+	// hashed_new_refresh_token , err := passwordhashing.HashPassword(newRefreshToken)
+	// if err != nil {
+	// 	respondWithError(w, 500, "Failed to hash  refresh token")
+	// 	return
+	// }
 
 	// Revoke old refresh token
-	err = apiConf.db.RevokeRefreshToken(r.Context(), hashed_params_refresh_token)
+	err = apiConf.db.RevokeRefreshToken(r.Context(), params.RefreshToken)
 	if err != nil {
 		respondWithError(w, 500, "Failed to revoke old refresh token")
 		return
@@ -300,7 +300,7 @@ func (apiConf apiConfig) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	_, err = apiConf.db.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
 		ID:        uuid.New(),
 		UserID:    user.ID,
-		Token:     hashed_new_refresh_token,
+		Token:     newRefreshToken,
 		ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
 		CreatedAt: time.Now().UTC(),
 	})

@@ -63,6 +63,12 @@ func (apiConf *apiConfig) AdminMiddlewareAuth(handler authHandler) http.HandlerF
             respondWithError(w , 401 ,"ACCESS TOKEN EXPIRED!")
 			return 
 		  }
+		  _ , err = apiConf.db.GetToken(r.Context(),access_token)
+
+		  if err != nil{
+			respondWithError(w , 400 , fmt.Sprintf("Token is blacklisted.%v",err))
+			return
+		  }
 
 		  user_id,err := jwtAuth.ExtractUserIDFromToken(access_token)
 		  if err != nil{
