@@ -242,9 +242,13 @@ func (apiConf apiConfig) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Verify the refresh token and extract user ID
-
+    hashed_params_refresh_token ,err := passwordhashing.HashPassword(params.RefreshToken)
+	if err != nil {
+		respondWithError(w, 500, "Failed to hash  refresh token")
+		return
+	}
 	
-	userID, err := jwtAuth.VerifyRefreshToken(params.RefreshToken)
+	userID, err := jwtAuth.VerifyRefreshToken(hashed_params_refresh_token)
 	if err != nil {
 		respondWithError(w, 401, fmt.Sprintf("Invalid refresh token: %v", err))
 		return
@@ -275,19 +279,28 @@ func (apiConf apiConfig) RefreshToken(w http.ResponseWriter, r *http.Request) {
 
 	// Optionally generate new refresh token (refresh token rotation)
 	newRefreshToken := jwtAuth.GenerateRefreshToken(user)
+    
+	
+	hashed_new_refresh_token , err := passwordhashing.HashPassword(newRefreshToken)
+	if err != nil {
+		respondWithError(w, 500, "Failed to hash  refresh token")
+		return
+	}
 
 	// Revoke old refresh token
-	err = apiConf.db.RevokeRefreshToken(r.Context(), params.RefreshToken)
+	err = apiConf.db.RevokeRefreshToken(r.Context(), hashed_params_refresh_token)
 	if err != nil {
 		respondWithError(w, 500, "Failed to revoke old refresh token")
 		return
 	}
+    
+
 
 	// Store new refresh token
 	_, err = apiConf.db.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
 		ID:        uuid.New(),
 		UserID:    user.ID,
-		Token:     newRefreshToken,
+		Token:     hashed_new_refresh_token,
 		ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
 		CreatedAt: time.Now().UTC(),
 	})
