@@ -392,6 +392,7 @@ func (apiConf apiConfig)ForgotPassword(w http.ResponseWriter , r *http.Request) 
 	}
 
    apiConf.db.DeleteOtpByUserId(r.Context(),user.ID)
+   apiConf.db.RevokeAllUserRefreshTokens(r.Context(),user.ID)
    respondWithJSON(w,200 , ResponseHealth("Your password updated successfully"))
 
 }
