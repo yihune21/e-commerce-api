@@ -14,11 +14,11 @@ SELECT * FROM products WHERE name = $1;
 SELECT * FROM products;
 
 -- name: UpdateProductPrice :one
-UPDATE products SET price = $1 WHERE name = $2
+UPDATE products SET price = $1 WHERE id = $2
 RETURNING *;
 
 -- name: UpdateProductImage :one
-UPDATE products SET image_url = $1 WHERE name = $2
+UPDATE products SET image_url = $1 WHERE id = $2
 RETURNING *;
 
 -- name: UpdateProductStock :one

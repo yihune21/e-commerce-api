@@ -49,6 +49,49 @@ func (q *Queries) CreateCategoty(ctx context.Context, arg CreateCategotyParams) 
 	return i, err
 }
 
+const deleteCategoryById = `-- name: DeleteCategoryById :exec
+DELETE From categories WHERE id = $1
+`
+
+func (q *Queries) DeleteCategoryById(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteCategoryById, id)
+	return err
+}
+
+const getCategory = `-- name: GetCategory :many
+SELECT id, name, description, parent_id, created_at, updated_at FROM categories
+`
+
+func (q *Queries) GetCategory(ctx context.Context) ([]Category, error) {
+	rows, err := q.db.QueryContext(ctx, getCategory)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Category
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.ParentID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCategoryById = `-- name: GetCategoryById :one
 SELECT id, name, description, parent_id, created_at, updated_at FROM categories WHERE id = $1
 `

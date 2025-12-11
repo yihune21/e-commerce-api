@@ -153,17 +153,17 @@ func (q *Queries) GetProductByName(ctx context.Context, name string) (Product, e
 }
 
 const updateProductImage = `-- name: UpdateProductImage :one
-UPDATE products SET image_url = $1 WHERE name = $2
+UPDATE products SET image_url = $1 WHERE id = $2
 RETURNING id, name, description, price, stock, category_id, image_url, is_active, created_at, updated_at
 `
 
 type UpdateProductImageParams struct {
 	ImageUrl sql.NullString
-	Name     string
+	ID       uuid.UUID
 }
 
 func (q *Queries) UpdateProductImage(ctx context.Context, arg UpdateProductImageParams) (Product, error) {
-	row := q.db.QueryRowContext(ctx, updateProductImage, arg.ImageUrl, arg.Name)
+	row := q.db.QueryRowContext(ctx, updateProductImage, arg.ImageUrl, arg.ID)
 	var i Product
 	err := row.Scan(
 		&i.ID,
@@ -181,17 +181,17 @@ func (q *Queries) UpdateProductImage(ctx context.Context, arg UpdateProductImage
 }
 
 const updateProductPrice = `-- name: UpdateProductPrice :one
-UPDATE products SET price = $1 WHERE name = $2
+UPDATE products SET price = $1 WHERE id = $2
 RETURNING id, name, description, price, stock, category_id, image_url, is_active, created_at, updated_at
 `
 
 type UpdateProductPriceParams struct {
 	Price string
-	Name  string
+	ID    uuid.UUID
 }
 
 func (q *Queries) UpdateProductPrice(ctx context.Context, arg UpdateProductPriceParams) (Product, error) {
-	row := q.db.QueryRowContext(ctx, updateProductPrice, arg.Price, arg.Name)
+	row := q.db.QueryRowContext(ctx, updateProductPrice, arg.Price, arg.ID)
 	var i Product
 	err := row.Scan(
 		&i.ID,

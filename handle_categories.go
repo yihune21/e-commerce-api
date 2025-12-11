@@ -69,12 +69,14 @@ func (apiCfg apiConfig)UpdateCategoryName(w http.ResponseWriter , r *http.Reques
 
 	if idStr == ""{
 		respondWithError(w  , 400 , "Missing category id")
+		return
 	}
 
     id , err := uuid.Parse(idStr)
 
 	if err!=  nil{
 		respondWithError(w , 400 , fmt.Sprintf("Error with parsing categpry id %v" ,err))
+		return
 	}
 
 	category ,err  := apiCfg.db.GetCategoryById(r.Context() , id)
@@ -94,4 +96,37 @@ func (apiCfg apiConfig)UpdateCategoryName(w http.ResponseWriter , r *http.Reques
 
 	respondWithJSON(w,200 , DatabaseCategoryToCategory(dbcat))
 	
+}
+
+func (apiCfg apiConfig)GetCategory(w http.ResponseWriter , r *http.Request , admin database.User)  {
+	  categories,err := apiCfg.db.GetCategory(r.Context())
+	  if err != nil {
+		respondWithError(w , 400 , fmt.Sprintf("Couldn't get categories %v" , err))
+	    return
+	  }
+
+	  respondWithJSON(w , 200 ,DatabaseCategorysToCategorys(categories))
+}
+
+func (apiCfg apiConfig)DeleteCategory(w http.ResponseWriter , r *http.Request , admin database.User)  {
+	idStr := chi.URLParam(r,"id")
+	if idStr == "" {
+		respondWithError(w ,400 , "Missing category id")
+		return
+	}
+
+	id,err := uuid.Parse(idStr)
+    if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Error with parsing category id %v" ,err))
+		return
+	}
+	
+	
+	err = apiCfg.db.DeleteCategoryById(r.Context() , id)
+	if err != nil {
+		respondWithError(w , 400 , fmt.Sprintf("Couldn't delete category %v" , err))
+		return
+	}
+
+	respondWithJSON(w , 200 ,struct{}{})
 }

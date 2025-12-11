@@ -52,41 +52,18 @@ func (q *Queries) CreateCartItem(ctx context.Context, arg CreateCartItemParams) 
 	return i, err
 }
 
-const deleteCartItemByCartId = `-- name: DeleteCartItemByCartId :many
-DELETE FROM cart_items WHERE cart_id = $1
-
-RETURNING id, cart_id, product_id, quantity, price_at_add, created_at, updated_at
+const deleteCartItem = `-- name: DeleteCartItem :exec
+DELETE FROM cart_items WHERE cart_id = $1 and product_id = $2
 `
 
-func (q *Queries) DeleteCartItemByCartId(ctx context.Context, cartID uuid.UUID) ([]CartItem, error) {
-	rows, err := q.db.QueryContext(ctx, deleteCartItemByCartId, cartID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []CartItem
-	for rows.Next() {
-		var i CartItem
-		if err := rows.Scan(
-			&i.ID,
-			&i.CartID,
-			&i.ProductID,
-			&i.Quantity,
-			&i.PriceAtAdd,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+type DeleteCartItemParams struct {
+	CartID    uuid.UUID
+	ProductID uuid.UUID
+}
+
+func (q *Queries) DeleteCartItem(ctx context.Context, arg DeleteCartItemParams) error {
+	_, err := q.db.ExecContext(ctx, deleteCartItem, arg.CartID, arg.ProductID)
+	return err
 }
 
 const getCartItemByCartId = `-- name: GetCartItemByCartId :many
@@ -146,15 +123,6 @@ func (q *Queries) GetCartItemByCartIdAndProductId(ctx context.Context, arg GetCa
 		&i.UpdatedAt,
 	)
 	return i, err
-}
-
-const removeCartItemFromCart = `-- name: RemoveCartItemFromCart :exec
-DELETE FROM cart_items WHERE product_id = $1
-`
-
-func (q *Queries) RemoveCartItemFromCart(ctx context.Context, productID uuid.UUID) error {
-	_, err := q.db.ExecContext(ctx, removeCartItemFromCart, productID)
-	return err
 }
 
 const updateCartItemQuantity = `-- name: UpdateCartItemQuantity :one

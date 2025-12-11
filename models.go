@@ -113,6 +113,16 @@ func DatabaseCategoryToCategory(dbcat database.Category) Category  {
 	}
 }
 
+func DatabaseCategorysToCategorys(dbCategory []database.Category)[]Category  {
+	categories := []Category{}
+
+	for _,category := range dbCategory{
+		categories = append(categories, DatabaseCategoryToCategory(category))
+	}
+	return categories
+}
+
+
 type Cart struct{
 	Id uuid.UUID `json:"id"`
 	UserId uuid.UUID `json:"user_id"`

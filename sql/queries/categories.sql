@@ -7,6 +7,12 @@ RETURNING *;
 -- name: GetCategoryById :one
 SELECT * FROM categories WHERE id = $1;
 
+-- name: GetCategory :many
+SELECT * FROM categories;
+
 -- name: UpdateCategoryName :one
 UPDATE categories SET name = $1 WHERE id = $2
 RETURNING *;
+
+-- name: DeleteCategoryById :exec
+DELETE From categories WHERE id = $1;

@@ -100,14 +100,26 @@ func(apiConf apiConfig) GetAllProducts(w http.ResponseWriter , r *http.Request )
 }
 
 func (apiConf apiConfig)UpdateProductPrice(w http.ResponseWriter , r *http.Request,admin database.User)  {
-   type parameters struct{
+   
+	idStr := chi.URLParam(r,"id")
+	if idStr == "" {
+		respondWithError(w ,400 , "Missing product id")
+		return
+	}
+
+	id,err := uuid.Parse(idStr)
+    if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Error with parsing product id %v" ,err))
+		return
+	}
+	type parameters struct{
 	    Name string `json:"name"`
 		Price string `json:"price"`
 	}
 	decode := json.NewDecoder(r.Body)
 	params := parameters{}
 
-	err :=  decode.Decode(&params)
+	err =  decode.Decode(&params)
 	if err != nil {
 		respondWithError(w ,400 , fmt.Sprintf("Error with parsing json %v" ,err))
 		return
@@ -115,7 +127,7 @@ func (apiConf apiConfig)UpdateProductPrice(w http.ResponseWriter , r *http.Reque
 
 	product,err := apiConf.db.UpdateProductPrice(r.Context() ,database.UpdateProductPriceParams{
 		Price: params.Price,
-		Name: params.Name,
+		ID: id,
 	})
 	if err != nil {
 		respondWithError(w ,400 , fmt.Sprintf("Couldn't update product %v" ,err))
@@ -126,14 +138,26 @@ func (apiConf apiConfig)UpdateProductPrice(w http.ResponseWriter , r *http.Reque
 
 }
 func (apiConf apiConfig)UpdateProductImage(w http.ResponseWriter , r *http.Request,admin database.User)  {
+	
+	idStr := chi.URLParam(r,"id")
+	if idStr == "" {
+		respondWithError(w ,400 , "Missing product id")
+		return
+	}
+
+	id,err := uuid.Parse(idStr)
+    if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Error with parsing product id %v" ,err))
+		return
+	}
+
 	type parameters struct{
-		Name string `json:"name"`
 	    ImageUrl string `json:"image_url"`
 	}
     decode := json.NewDecoder(r.Body)
 	params := parameters{}
 
-	err :=  decode.Decode(&params)
+	err =  decode.Decode(&params)
 	if err != nil {
 		respondWithError(w ,400 , fmt.Sprintf("Error with parsing json %v" ,err))
 		return
@@ -147,12 +171,12 @@ func (apiConf apiConfig)UpdateProductImage(w http.ResponseWriter , r *http.Reque
 
     
 	product , err := apiConf.db.UpdateProductImage(r.Context() , database.UpdateProductImageParams{
-			Name:params.Name,
+			ID:id,
 			ImageUrl: image_url,
 	})
 
 	if err != nil {
-		respondWithError(w ,201 ,fmt.Sprintf("Couldn't update the product image %v" ,err))
+		respondWithError(w ,400 ,fmt.Sprintf("Couldn't update the product image %v" ,err))
 		return
 	}
     

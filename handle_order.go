@@ -105,8 +105,13 @@ func(apiCfg apiConfig) CreateOrder(w http.ResponseWriter , r *http.Request, user
         
 
     }
-    apiCfg.db.DeleteCartItemByCartId(r.Context(), cart.ID)
-    
+    for _,item :=range params.Items {
+
+        apiCfg.db.DeleteCartItem(r.Context(), database.DeleteCartItemParams{
+            CartID: cart.ID,
+            ProductID: item.ProductID,
+        })
+    }
     respondWithJSON(w,200 , DatabaseOrderToOrder(order))
 }
 
