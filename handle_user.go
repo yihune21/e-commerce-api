@@ -416,6 +416,7 @@ func (apiConf apiConfig)LogOut(w http.ResponseWriter , r *http.Request , user da
 	   respondWithError(w , 401 , fmt.Sprintf("Error with creating token blacklist %s" , err))
 	   return
 	}
+	apiConf.db.RevokeAllUserRefreshTokens(r.Context() , user.ID)
 }
 
 func (apiConf apiConfig)DeleteUser(w http.ResponseWriter , r *http.Request , user database.User)  {
