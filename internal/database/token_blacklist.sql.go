@@ -54,3 +54,17 @@ func (q *Queries) DeleteExpiredBlacklistTokens(ctx context.Context) error {
 	_, err := q.db.ExecContext(ctx, deleteExpiredBlacklistTokens)
 	return err
 }
+
+const getToken = `-- name: GetToken :one
+SELECT FROM token_blacklist WHERE token = $1
+`
+
+type GetTokenRow struct {
+}
+
+func (q *Queries) GetToken(ctx context.Context, token string) (GetTokenRow, error) {
+	row := q.db.QueryRowContext(ctx, getToken, token)
+	var i GetTokenRow
+	err := row.Scan()
+	return i, err
+}

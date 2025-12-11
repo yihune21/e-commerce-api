@@ -6,3 +6,6 @@ RETURNING *;
 -- name: DeleteExpiredBlacklistTokens :exec
 DELETE FROM token_blacklist
 WHERE expires_at < NOW();
+
+-- name: GetToken :one 
+SELECT FROM token_blacklist WHERE token = $1;

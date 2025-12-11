@@ -82,8 +82,10 @@ func VerfiyToken(tokenString string) bool {
 	parsedToken, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return public_key, nil
 	})
+
 	if err != nil {
-		panic(err)
+		fmt.Printf("Erorr with parsing.%v",err)
+		return false
 	}
 
 	return  parsedToken.Valid

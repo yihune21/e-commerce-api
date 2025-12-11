@@ -161,12 +161,18 @@ func (apiConf apiConfig)Login(w http.ResponseWriter , r *http.Request){
 	// Generate both access and refresh tokens
 	access_token := jwtAuth.GenerateAccessToken(user)
 	refresh_token := jwtAuth.GenerateRefreshToken(user)
+    
+	refresh_token_hash,err := passwordhashing.HashPassword(refresh_token)
+    if err != nil {
+		respondWithError(w, 400, fmt.Sprintf("Failed to hash refresh token: %v", err))
+		return
+	}
 
 	// Store refresh token in database
 	_, err = apiConf.db.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
 		ID: uuid.New(),
 		UserID: user.ID,
-		Token: refresh_token,
+		Token: refresh_token_hash,
 		ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
 		CreatedAt: time.Now().UTC(),
 	})
@@ -236,6 +242,8 @@ func (apiConf apiConfig) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Verify the refresh token and extract user ID
+
+	
 	userID, err := jwtAuth.VerifyRefreshToken(params.RefreshToken)
 	if err != nil {
 		respondWithError(w, 401, fmt.Sprintf("Invalid refresh token: %v", err))
