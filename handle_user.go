@@ -255,7 +255,7 @@ func (apiConf apiConfig) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if refresh token exists in database and is not revoked
-	dbToken, err := apiConf.db.GetRefreshTokenByToken(r.Context(), params.RefreshToken)
+	dbToken, err := apiConf.db.GetRefreshTokenByToken(r.Context(), hashed_params_refresh_token)
 	if err != nil {
 		respondWithError(w, 401, "Refresh token not found or expired")
 		return
