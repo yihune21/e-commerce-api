@@ -171,6 +171,23 @@ func  (apiCfg apiConfig)UpdateCartItem(w http.ResponseWriter, r *http.Request, u
 		respondWithError(w ,400 , fmt.Sprintf("Error with parsing product id %v" ,err))
 		return
 	}
+
+	type parameters struct {
+		Quantity  int       `json:"quantity"`
+	}
+
+	var params parameters
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		respondWithError(w, 400, fmt.Sprintf("Error parsing json: %v", err))
+		return
+	}
+
+	product , err := apiCfg.db.GetProductById(r.Context() , id)
+	if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Couldn't find product %v" ,err))
+		return
+	}
+
     cart ,  err := apiCfg.db.GetCartByUserId(r.Context(),user.ID)
 	if err != nil {
 		respondWithError(w ,400 , fmt.Sprintf("Couldn't find cart %v" ,err))
@@ -193,9 +210,14 @@ func  (apiCfg apiConfig)UpdateCartItem(w http.ResponseWriter, r *http.Request, u
 		respondWithError(w ,400 , fmt.Sprintf("Couldn't find cart item %v" ,err))
 		return
 	}
+
+	if cart_item.Quantity + int32(params.Quantity) > product.Stock {
+		respondWithError(w , 400 , "Added more than available stock.")
+	}
+
     new_cart_item , err :=  apiCfg.db.UpdateCartItemQuantity(r.Context() , database.UpdateCartItemQuantityParams{
 		ID: cart_item.ID,
-		Quantity:cart_item.Quantity + 1,
+		Quantity:cart_item.Quantity + int32(params.Quantity),
 	})
 
 	respondWithJSON(w , 200 , DatabaseCartItemToCartItem(new_cart_item))
