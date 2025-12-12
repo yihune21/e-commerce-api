@@ -27,3 +27,6 @@ RETURNING *;
 
 -- name: DeleteProductByProductId :exec
 DELETE FROM products WHERE id = $1;
+
+-- name: GetProductByCategoryId :many
+SELECT * FROM products WHERE category_id = $1;

@@ -208,3 +208,26 @@ func (apiConf apiConfig)DeleteProduct(w http.ResponseWriter , r *http.Request ,a
 
 }
 
+
+func (apiConf apiConfig)FilterByCategory(w http.ResponseWriter , r *http.Request ,user database.User)  {
+	 idStr := chi.URLParam(r , "id")
+     
+	 if idStr == ""{
+		respondWithError(w , 400 , "Missing category id")
+		return
+	 }
+
+     id , err  := uuid.Parse(idStr)
+
+	 if err != nil {
+        respondWithError(w , 400 , fmt.Sprintf("Error with parsing %v" , err))
+		return
+	 }
+	 products , err := apiConf.db.GetProductByCategoryId(r.Context() , id)
+
+     if err != nil {
+        respondWithError(w , 400 , fmt.Sprintf("Couldn't found products %v" , err))
+		return
+	 }
+	 respondWithJSON(w , 200 , DatabaseProductsToProducts(products))
+}

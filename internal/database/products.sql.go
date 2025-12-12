@@ -108,6 +108,44 @@ func (q *Queries) GetAllProducts(ctx context.Context) ([]Product, error) {
 	return items, nil
 }
 
+const getProductByCategoryId = `-- name: GetProductByCategoryId :many
+SELECT id, name, description, price, stock, category_id, image_url, is_active, created_at, updated_at FROM products WHERE category_id = $1
+`
+
+func (q *Queries) GetProductByCategoryId(ctx context.Context, categoryID uuid.UUID) ([]Product, error) {
+	rows, err := q.db.QueryContext(ctx, getProductByCategoryId, categoryID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Product
+	for rows.Next() {
+		var i Product
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Price,
+			&i.Stock,
+			&i.CategoryID,
+			&i.ImageUrl,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getProductById = `-- name: GetProductById :one
 SELECT id, name, description, price, stock, category_id, image_url, is_active, created_at, updated_at FROM products WHERE id = $1
 `
