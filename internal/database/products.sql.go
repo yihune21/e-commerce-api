@@ -146,6 +146,50 @@ func (q *Queries) GetProductByCategoryId(ctx context.Context, categoryID uuid.UU
 	return items, nil
 }
 
+const getProductByCategoryIdAndPriceRange = `-- name: GetProductByCategoryIdAndPriceRange :many
+SELECT id, name, description, price, stock, category_id, image_url, is_active, created_at, updated_at FROM products WHERE category_id = $1 AND price >= $2 AND price <= $3
+`
+
+type GetProductByCategoryIdAndPriceRangeParams struct {
+	CategoryID uuid.UUID
+	Price      string
+	Price_2    string
+}
+
+func (q *Queries) GetProductByCategoryIdAndPriceRange(ctx context.Context, arg GetProductByCategoryIdAndPriceRangeParams) ([]Product, error) {
+	rows, err := q.db.QueryContext(ctx, getProductByCategoryIdAndPriceRange, arg.CategoryID, arg.Price, arg.Price_2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Product
+	for rows.Next() {
+		var i Product
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Price,
+			&i.Stock,
+			&i.CategoryID,
+			&i.ImageUrl,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getProductById = `-- name: GetProductById :one
 SELECT id, name, description, price, stock, category_id, image_url, is_active, created_at, updated_at FROM products WHERE id = $1
 `
@@ -188,6 +232,49 @@ func (q *Queries) GetProductByName(ctx context.Context, name string) (Product, e
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const getProductByPriceRange = `-- name: GetProductByPriceRange :many
+SELECT id, name, description, price, stock, category_id, image_url, is_active, created_at, updated_at FROM products WHERE price >= $1 AND price <= $2
+`
+
+type GetProductByPriceRangeParams struct {
+	Price   string
+	Price_2 string
+}
+
+func (q *Queries) GetProductByPriceRange(ctx context.Context, arg GetProductByPriceRangeParams) ([]Product, error) {
+	rows, err := q.db.QueryContext(ctx, getProductByPriceRange, arg.Price, arg.Price_2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Product
+	for rows.Next() {
+		var i Product
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Price,
+			&i.Stock,
+			&i.CategoryID,
+			&i.ImageUrl,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const updateProductImage = `-- name: UpdateProductImage :one

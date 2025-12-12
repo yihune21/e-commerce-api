@@ -231,3 +231,76 @@ func (apiConf apiConfig)FilterByCategory(w http.ResponseWriter , r *http.Request
 	 }
 	 respondWithJSON(w , 200 , DatabaseProductsToProducts(products))
 }
+
+func (apiConf apiConfig)FilterByPriceRange(w http.ResponseWriter , r *http.Request ,user database.User)  {
+     type parameters struct{
+          From string `json:"from"`
+		  To   string 	`json:"to"`
+	 }
+
+	decode := json.NewDecoder(r.Body)
+	params := parameters{}
+
+	err := decode.Decode(&params)
+    
+	if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Error with parsing json %v" ,err))
+		return
+	}
+
+	products , err := apiConf.db.GetProductByPriceRange(r.Context() , database.GetProductByPriceRangeParams{
+		Price: params.From,
+		Price_2: params.To,
+	})
+    
+	if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Couldn't found product %v" ,err))
+		return
+	}
+
+	respondWithJSON(w , 200 , DatabaseProductsToProducts(products))
+
+}
+
+func (apiConf apiConfig)FilterByCategoryPriceRange(w http.ResponseWriter , r *http.Request ,user database.User)  {
+     type parameters struct{
+          From string `json:"from"`
+		  To   string 	`json:"to"`
+	 }
+
+	decode := json.NewDecoder(r.Body)
+	params := parameters{}
+
+	err := decode.Decode(&params)
+    
+	if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Error with parsing json %v" ,err))
+		return
+	}
+    idStr := chi.URLParam(r , "id")
+     
+	 if idStr == ""{
+		respondWithError(w , 400 , "Missing category id")
+		return
+	 }
+
+    id , err  := uuid.Parse(idStr)
+
+	if err != nil {
+        respondWithError(w , 400 , fmt.Sprintf("Error with parsing %v" , err))
+		return
+	}
+	products , err := apiConf.db.GetProductByCategoryIdAndPriceRange(r.Context() , database.GetProductByCategoryIdAndPriceRangeParams{
+		CategoryID: id,
+		Price: params.From,
+		Price_2: params.To,
+	})
+    
+	if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Couldn't found product %v" ,err))
+		return
+	}
+
+	respondWithJSON(w , 200 , DatabaseProductsToProducts(products))
+
+}

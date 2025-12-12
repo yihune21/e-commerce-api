@@ -30,3 +30,9 @@ DELETE FROM products WHERE id = $1;
 
 -- name: GetProductByCategoryId :many
 SELECT * FROM products WHERE category_id = $1;
+
+-- name: GetProductByPriceRange :many
+SELECT * FROM products WHERE price >= $1 AND price <= $2;
+
+-- name: GetProductByCategoryIdAndPriceRange :many
+SELECT * FROM products WHERE category_id = $1 AND price >= $2 AND price <= $3;
