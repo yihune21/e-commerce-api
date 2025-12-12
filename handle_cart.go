@@ -132,14 +132,23 @@ func (apiCfg apiConfig) RemoveFromCart(w http.ResponseWriter, r *http.Request, u
 		respondWithError(w ,400 , fmt.Sprintf("Error with parsing product id %v" ,err))
 		return
 	}
+
 	cart , err := apiCfg.db.GetCartByUserId(r.Context() , user.ID)
 	 if err != nil {
 		respondWithError(w ,400 , fmt.Sprintf("Couldn't found cart %v" ,err))
 		return
 	}
-	err = apiCfg.db.DeleteCartItem(r.Context() , database.DeleteCartItemParams{
+	cart_item , err := apiCfg.db.GetCartItemByCartIdAndProductId(r.Context() , database.GetCartItemByCartIdAndProductIdParams{
 		CartID: cart.ID,
 		ProductID: id,
+	})
+	if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Couldn't found cart item %v" ,err))
+		return
+	}
+	err = apiCfg.db.DeleteCartItem(r.Context() , database.DeleteCartItemParams{
+		CartID: cart.ID,
+		ProductID: cart_item.ID,
 		
 	})
     if err != nil {
