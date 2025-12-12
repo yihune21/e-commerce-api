@@ -213,6 +213,7 @@ func  (apiCfg apiConfig)UpdateCartItem(w http.ResponseWriter, r *http.Request, u
 
 	if cart_item.Quantity + int32(params.Quantity) > product.Stock {
 		respondWithError(w , 400 , "Added more than available stock.")
+		return
 	}
 
     new_cart_item , err :=  apiCfg.db.UpdateCartItemQuantity(r.Context() , database.UpdateCartItemQuantityParams{
