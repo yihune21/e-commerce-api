@@ -176,10 +176,19 @@ func  (apiCfg apiConfig)UpdateCartItem(w http.ResponseWriter, r *http.Request, u
 		respondWithError(w ,400 , fmt.Sprintf("Couldn't find cart %v" ,err))
 		return
 	}
-	cart_item ,err := apiCfg.db.GetCartItemByCartIdAndProductId(r.Context() , database.GetCartItemByCartIdAndProductIdParams{
+	cart_item ,err := apiCfg.db.GetCartItemByCartIdAndProductId(r.Context() ,database.GetCartItemByCartIdAndProductIdParams{
 		CartID: cart.ID,
 		ProductID: id,
 	})
+    if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Couldn't find cart item %v" ,err))
+		return
+	}
+	cart_item ,err = apiCfg.db.GetCartItemByCartIdAndProductId(r.Context() , database.GetCartItemByCartIdAndProductIdParams{
+		CartID: cart.ID,
+		ProductID: cart_item.ID,
+	})
+
 	if err != nil {
 		respondWithError(w ,400 , fmt.Sprintf("Couldn't find cart item %v" ,err))
 		return
