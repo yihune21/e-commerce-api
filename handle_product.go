@@ -68,7 +68,7 @@ func(apiConf apiConfig) CreateProduct(w http.ResponseWriter , r *http.Request , 
 
 }
 
-func(apiConf apiConfig) GetProductByName(w http.ResponseWriter , r *http.Request )  {
+func(apiConf apiConfig) GetProductByName(w http.ResponseWriter , r *http.Request ,user database.User)  {
     type parameters struct {
 		Name string `json:"name"`
 	}
