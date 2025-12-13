@@ -169,9 +169,20 @@ func (apiCfg apiConfig)UpdateOrderStatus(w http.ResponseWriter , r *http.Request
 		respondWithError(w ,400 , fmt.Sprintf("Error with parsing order id %v" ,err))
 		return
 	}
+    type parameters struct{
+        Status string  `json:"status"`
+    }
+
+    decode := json.NewDecoder(r.Body)
+    params := parameters{}
+    err = decode.Decode(&params)
+    if err != nil {
+        respondWithError(w , 400,fmt.Sprintf("Error with parsing a json %v",err))
+        return
+    }
 
     order ,  err := apiCfg.db.UpdateOrderStatus(r.Context() ,database.UpdateOrderStatusParams{
-        OrderStatus: "Delivered",
+        OrderStatus: params.Status,
         ID: id,
     } )
     if  err != nil {
