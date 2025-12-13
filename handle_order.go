@@ -193,7 +193,7 @@ func (apiCfg apiConfig)UpdateOrderStatus(w http.ResponseWriter , r *http.Request
     respondWithJSON(w , 200 , DatabaseOrderToOrder(order))
 }
 
-func (apiConf apiConfig)OrderPagination(w http.ResponseWriter , r *http.Request ,user database.User)  {
+func (apiCfg apiConfig)OrderPagination(w http.ResponseWriter , r *http.Request ,user database.User)  {
      type parameters struct{
           OrdersPerPage int32 `json:"orders_per_page"`
 	 }
@@ -207,7 +207,7 @@ func (apiConf apiConfig)OrderPagination(w http.ResponseWriter , r *http.Request 
 		respondWithError(w ,400 , fmt.Sprintf("Error with parsing json %v" ,err))
 		return
 	}
-	orders , err := apiConf.db.GetOrdersPerPage(r.Context() , params.OrdersPerPage)
+	orders , err := apiCfg.db.GetOrdersPerPage(r.Context() , params.OrdersPerPage)
     
 	if err != nil {
 		respondWithError(w ,400 , fmt.Sprintf("Couldn't found order %v" ,err))
@@ -215,5 +215,37 @@ func (apiConf apiConfig)OrderPagination(w http.ResponseWriter , r *http.Request 
 	}
 
 	respondWithJSON(w , 200 , DatabaseOrdersToOrders(orders))
+
+}
+
+func (apiCfg apiConfig)OrderCancellation(w http.ResponseWriter , r *http.Request ,user database.User)  {
+     idStr := chi.URLParam(r,"id")
+	if idStr == "" {
+		respondWithError(w ,400 , "Missing order id")
+		return
+	}
+
+	id ,err := uuid.Parse(idStr)
+    if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Error with parsing order id %v" ,err))
+		return
+	}
+    ord, err := apiCfg.db.GetOrder(r.Context(),id)
+
+    if ord.OrderStatus == "Delivered"{
+       respondWithError(w, 400 ,"The order has already delivered.")
+       return
+    }
+
+    order ,  err := apiCfg.db.UpdateOrderStatus(r.Context() ,database.UpdateOrderStatusParams{
+        OrderStatus: "CANCELLED",
+        ID: id,
+    })
+    if  err != nil {
+        respondWithError(w,400 , fmt.Sprintf("Couldn't found order %v",err))
+        return
+    }
+
+    respondWithJSON(w , 200 , DatabaseOrderToOrder(order))
 
 }
