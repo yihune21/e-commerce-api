@@ -36,3 +36,6 @@ SELECT * FROM products WHERE price >= $1 AND price <= $2;
 
 -- name: GetProductByCategoryIdAndPriceRange :many
 SELECT * FROM products WHERE category_id = $1 AND price >= $2 AND price <= $3;
+
+-- name: GetProductsPerPage :many
+SELECT * FROM products ORDER BY created_at ASC Limit $1 ;

@@ -304,3 +304,28 @@ func (apiConf apiConfig)FilterByCategoryPriceRange(w http.ResponseWriter , r *ht
 	respondWithJSON(w , 200 , DatabaseProductsToProducts(products))
 
 }
+
+func (apiConf apiConfig)Pagination(w http.ResponseWriter , r *http.Request ,user database.User)  {
+     type parameters struct{
+          ProductsPerPage int32 `json:"products_per_page"`
+	 }
+
+	decode := json.NewDecoder(r.Body)
+	params := parameters{}
+
+	err := decode.Decode(&params)
+    
+	if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Error with parsing json %v" ,err))
+		return
+	}
+	products , err := apiConf.db.GetProductsPerPage(r.Context() , params.ProductsPerPage)
+    
+	if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Couldn't found product %v" ,err))
+		return
+	}
+
+	respondWithJSON(w , 200 , DatabaseProductsToProducts(products))
+
+}

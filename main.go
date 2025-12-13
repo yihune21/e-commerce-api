@@ -80,6 +80,7 @@ func main()  {
     v1Router.Patch("/admin/order/{id}",apiCfg.AdminMiddlewareAuth(apiCfg.UpdateOrderStatus))
     v1Router.Get("/filter-by-price-range",apiCfg.middlewareAuth(apiCfg.FilterByPriceRange))
     v1Router.Get("/filter-by-category-price-range/{id}",apiCfg.middlewareAuth(apiCfg.FilterByCategoryPriceRange))
+    v1Router.Get("/product/pagination",apiCfg.middlewareAuth(apiCfg.Pagination))
 
 
 

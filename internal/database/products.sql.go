@@ -277,6 +277,44 @@ func (q *Queries) GetProductByPriceRange(ctx context.Context, arg GetProductByPr
 	return items, nil
 }
 
+const getProductsPerPage = `-- name: GetProductsPerPage :many
+SELECT id, name, description, price, stock, category_id, image_url, is_active, created_at, updated_at FROM products ORDER BY created_at ASC Limit $1
+`
+
+func (q *Queries) GetProductsPerPage(ctx context.Context, limit int32) ([]Product, error) {
+	rows, err := q.db.QueryContext(ctx, getProductsPerPage, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Product
+	for rows.Next() {
+		var i Product
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Price,
+			&i.Stock,
+			&i.CategoryID,
+			&i.ImageUrl,
+			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateProductImage = `-- name: UpdateProductImage :one
 UPDATE products SET image_url = $1 WHERE id = $2
 RETURNING id, name, description, price, stock, category_id, image_url, is_active, created_at, updated_at
