@@ -12,6 +12,10 @@ SELECT * FROM orders WHERE id = $1;
 -- name: GetOrdersByUserId :many
 SELECT * FROM orders WHERE user_id = $1;
 
+-- name: GetOrdersPerPage :many
+SELECT * FROM orders ORDER BY created_at Limit $1;
+
+
 -- name: UpdateOrderStatus :one
 UPDATE orders SET order_status = $1 WHERE id = $2
 RETURNING *;

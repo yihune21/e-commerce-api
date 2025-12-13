@@ -140,6 +140,41 @@ func (q *Queries) GetOrdersByUserId(ctx context.Context, userID uuid.UUID) ([]Or
 	return items, nil
 }
 
+const getOrdersPerPage = `-- name: GetOrdersPerPage :many
+SELECT id, user_id, order_status, total, payment_status, created_at, updated_at FROM orders ORDER BY created_at Limit $1
+`
+
+func (q *Queries) GetOrdersPerPage(ctx context.Context, limit int32) ([]Order, error) {
+	rows, err := q.db.QueryContext(ctx, getOrdersPerPage, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Order
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.OrderStatus,
+			&i.Total,
+			&i.PaymentStatus,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateOrderStatus = `-- name: UpdateOrderStatus :one
 UPDATE orders SET order_status = $1 WHERE id = $2
 RETURNING id, user_id, order_status, total, payment_status, created_at, updated_at

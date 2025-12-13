@@ -181,3 +181,28 @@ func (apiCfg apiConfig)UpdateOrderStatus(w http.ResponseWriter , r *http.Request
 
     respondWithJSON(w , 200 , DatabaseOrderToOrder(order))
 }
+
+func (apiConf apiConfig)OrderPagination(w http.ResponseWriter , r *http.Request ,user database.User)  {
+     type parameters struct{
+          OrdersPerPage int32 `json:"orders_per_page"`
+	 }
+
+	decode := json.NewDecoder(r.Body)
+	params := parameters{}
+
+	err := decode.Decode(&params)
+    
+	if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Error with parsing json %v" ,err))
+		return
+	}
+	orders , err := apiConf.db.GetOrdersPerPage(r.Context() , params.OrdersPerPage)
+    
+	if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Couldn't found order %v" ,err))
+		return
+	}
+
+	respondWithJSON(w , 200 , DatabaseOrdersToOrders(orders))
+
+}
