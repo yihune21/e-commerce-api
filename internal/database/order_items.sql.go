@@ -50,3 +50,38 @@ func (q *Queries) CreateOrderItem(ctx context.Context, arg CreateOrderItemParams
 	)
 	return i, err
 }
+
+const getOrderItemsByOrderID = `-- name: GetOrderItemsByOrderID :many
+SELECT id, order_id, product_id, quantity, unit_price, total_price, created_at FROM order_items WHERE order_id = $1
+`
+
+func (q *Queries) GetOrderItemsByOrderID(ctx context.Context, orderID uuid.UUID) ([]OrderItem, error) {
+	rows, err := q.db.QueryContext(ctx, getOrderItemsByOrderID, orderID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []OrderItem
+	for rows.Next() {
+		var i OrderItem
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrderID,
+			&i.ProductID,
+			&i.Quantity,
+			&i.UnitPrice,
+			&i.TotalPrice,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

@@ -203,3 +203,34 @@ func DatabaseOrdersToOrders(dbOrders []database.Order) []Order {
 	
 	return orders
 }
+
+type OrderItem struct{
+	Id uuid.UUID `json:"id"`
+    OrderId uuid.UUID `json:"order_id"`
+	ProductId uuid.UUID `json:"product_id"`
+	Quantity   int32 `json:"quantity"`
+	UnitPrice   string `json:"unit_price"`
+	TotalPrice   string `json:"total_price"`
+	CreatedAt    time.Time  `json:"created_at"`
+}
+
+func DatabaseOrderItemToOrderItem(dbOrderItem database.OrderItem) OrderItem {
+	return OrderItem{
+		Id: dbOrderItem.ID,
+		OrderId: dbOrderItem.OrderID,
+		ProductId:dbOrderItem.ProductID,
+		Quantity: dbOrderItem.Quantity,
+		UnitPrice: dbOrderItem.UnitPrice,
+		TotalPrice: dbOrderItem.TotalPrice,
+		CreatedAt: dbOrderItem.CreatedAt.Time,
+	}
+}
+
+func DatabaseOrderItemsToOrderItems(dbOrderItems []database.OrderItem) []OrderItem {
+	orderItems := []OrderItem{}
+	for _ , dbOrderItem := range dbOrderItems{
+		orderItems = append(orderItems , DatabaseOrderItemToOrderItem(dbOrderItem))
+	}
+	
+	return orderItems
+}

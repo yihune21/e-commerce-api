@@ -154,7 +154,10 @@ func (apiCfg apiConfig)GetOrderDetail(w http.ResponseWriter , r *http.Request, u
         return
     }
 
+    order_items , err := apiCfg.db.GetOrderItemsByOrderID(r.Context() , id)
+    
     respondWithJSON(w , 200 , DatabaseOrderToOrder(order))
+    respondWithJSON(w, 200 , DatabaseOrderItemsToOrderItems(order_items))
 }
 
 func (apiCfg apiConfig)UpdateOrderStatus(w http.ResponseWriter , r *http.Request, admin database.User)  {
