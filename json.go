@@ -9,7 +9,7 @@ import (
 func respondWithError(w http.ResponseWriter , code int , msg string)  {
 	
 	if code > 499 {
-       log.Println("Responding with 5xx error" , msg)
+       log.Println("Internal server error" , msg)
 	   return
 	} 
 	type errorResponse struct{
