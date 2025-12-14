@@ -18,7 +18,11 @@ type apiConfig struct{
 }
 
 func main()  {
-    godotenv.Load(".env")
+    err := godotenv.Load(".env")
+	if err != nil{
+		fmt.Printf("Error with loading .env file %v" , err)
+	    return
+	}
 	port := os.Getenv("PORT")
     db_url := os.Getenv("DB_URL")
 	
@@ -29,14 +33,14 @@ func main()  {
 	apiCfg := apiConfig{
 		db : db_conn,
 	}
-	fmt.Println("Database connected succefully!")
+	fmt.Println("Database connected successfully!")
 
 
 	router := chi.NewRouter()
 	router.Use(cors.Handler(
 		cors.Options{
-		AllowedOrigins: []string{"https://*","http://*"},
-		AllowedMethods: []string{"GET","POST","DELETE","OPTIONS","PUT","PATCH"},
+		AllowedOrigins: []string{"https://*"},
+		AllowedMethods: []string{"GET","POST","DELETE","PUT","PATCH"},
 		AllowedHeaders: []string{"*"},
 		ExposedHeaders: []string{"Link"},
 		AllowCredentials: false,
@@ -66,7 +70,7 @@ func main()  {
     v1Router.Get("/category/{id}",apiCfg.middlewareAuth(apiCfg.FilterByCategory))
 	v1Router.Post("/admin/category",apiCfg.AdminMiddlewareAuth(apiCfg.NewCategory))
 	v1Router.Get("/admin/category",apiCfg.AdminMiddlewareAuth(apiCfg.GetCategory))
-	v1Router.Get("/admin/category/{id}",apiCfg.AdminMiddlewareAuth(apiCfg.DeleteCategory))
+	v1Router.Delete("/admin/category/{id}",apiCfg.AdminMiddlewareAuth(apiCfg.DeleteCategory))
 	v1Router.Patch("/admin/category/{id}",apiCfg.AdminMiddlewareAuth(apiCfg.UpdateCategoryName))
 	v1Router.Post("/cart",apiCfg.middlewareAuth(apiCfg.AddToCart))
 	v1Router.Get("/cart", apiCfg.middlewareAuth(apiCfg.GetCart))
