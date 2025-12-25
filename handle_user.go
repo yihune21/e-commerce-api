@@ -13,6 +13,7 @@ import (
 	jwtAuth "github.com/yihune21/e-commerce-api/jwt"
 	passwordhashing "github.com/yihune21/e-commerce-api/password_hashing"
 )
+//TODP DATABASE INDEXINF FOR BETTER READ 
 
 func (apiConf apiConfig) New(w http.ResponseWriter , r *http.Request){
 	type  parameters struct{
