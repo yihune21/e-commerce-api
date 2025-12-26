@@ -39,13 +39,15 @@ type Category struct {
 }
 
 type Order struct {
-	ID            uuid.UUID
-	UserID        uuid.UUID
-	OrderStatus   string
-	Total         string
-	PaymentStatus sql.NullString
-	CreatedAt     sql.NullTime
-	UpdatedAt     sql.NullTime
+	ID             uuid.UUID
+	UserID         uuid.UUID
+	OrderStatus    string
+	Total          string
+	PaymentStatus  sql.NullString
+	CreatedAt      sql.NullTime
+	UpdatedAt      sql.NullTime
+	PaymentMethod  sql.NullString
+	DeliveryStatus sql.NullString
 }
 
 type OrderItem struct {
@@ -89,6 +91,22 @@ type RefreshToken struct {
 	RevokedAt sql.NullTime
 }
 
+type ShippingAddress struct {
+	ID                   uuid.UUID
+	OrderID              uuid.UUID
+	FullName             string
+	Phone                string
+	AddressLine1         string
+	AddressLine2         sql.NullString
+	City                 string
+	State                string
+	PostalCode           string
+	Country              string
+	DeliveryInstructions sql.NullString
+	CreatedAt            sql.NullTime
+	UpdatedAt            sql.NullTime
+}
+
 type TokenBlacklist struct {
 	ID        uuid.UUID
 	UserID    uuid.UUID
@@ -105,4 +123,5 @@ type User struct {
 	IsAdmin   bool
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	Phone     sql.NullString
 }

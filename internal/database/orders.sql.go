@@ -12,20 +12,54 @@ import (
 	"github.com/google/uuid"
 )
 
+const completePaymentOnDelivery = `-- name: CompletePaymentOnDelivery :one
+UPDATE orders 
+SET payment_status = 'completed', 
+    order_status = 'delivered',
+    delivery_status = 'delivered',
+    updated_at = $2
+WHERE id = $1 AND payment_method = 'cod'
+RETURNING id, user_id, order_status, total, payment_status, created_at, updated_at, payment_method, delivery_status
+`
+
+type CompletePaymentOnDeliveryParams struct {
+	ID        uuid.UUID
+	UpdatedAt sql.NullTime
+}
+
+func (q *Queries) CompletePaymentOnDelivery(ctx context.Context, arg CompletePaymentOnDeliveryParams) (Order, error) {
+	row := q.db.QueryRowContext(ctx, completePaymentOnDelivery, arg.ID, arg.UpdatedAt)
+	var i Order
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.OrderStatus,
+		&i.Total,
+		&i.PaymentStatus,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.PaymentMethod,
+		&i.DeliveryStatus,
+	)
+	return i, err
+}
+
 const createOrder = `-- name: CreateOrder :one
-INSERT INTO orders (id , user_id , order_status , total ,payment_status, created_at , updated_at) 
-values($1,$2,$3,$4,$5,$6 , $7)
-RETURNING id, user_id, order_status, total, payment_status, created_at, updated_at
+INSERT INTO orders (id , user_id , order_status , total ,payment_status, payment_method, delivery_status, created_at , updated_at) 
+values($1,$2,$3,$4,$5,$6,$7,$8,$9)
+RETURNING id, user_id, order_status, total, payment_status, created_at, updated_at, payment_method, delivery_status
 `
 
 type CreateOrderParams struct {
-	ID            uuid.UUID
-	UserID        uuid.UUID
-	OrderStatus   string
-	Total         string
-	PaymentStatus sql.NullString
-	CreatedAt     sql.NullTime
-	UpdatedAt     sql.NullTime
+	ID             uuid.UUID
+	UserID         uuid.UUID
+	OrderStatus    string
+	Total          string
+	PaymentStatus  sql.NullString
+	PaymentMethod  sql.NullString
+	DeliveryStatus sql.NullString
+	CreatedAt      sql.NullTime
+	UpdatedAt      sql.NullTime
 }
 
 func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order, error) {
@@ -35,6 +69,8 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order
 		arg.OrderStatus,
 		arg.Total,
 		arg.PaymentStatus,
+		arg.PaymentMethod,
+		arg.DeliveryStatus,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
@@ -47,12 +83,14 @@ func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order
 		&i.PaymentStatus,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PaymentMethod,
+		&i.DeliveryStatus,
 	)
 	return i, err
 }
 
 const getAllOrders = `-- name: GetAllOrders :many
-SELECT id, user_id, order_status, total, payment_status, created_at, updated_at FROM orders
+SELECT id, user_id, order_status, total, payment_status, created_at, updated_at, payment_method, delivery_status FROM orders
 `
 
 func (q *Queries) GetAllOrders(ctx context.Context) ([]Order, error) {
@@ -72,6 +110,8 @@ func (q *Queries) GetAllOrders(ctx context.Context) ([]Order, error) {
 			&i.PaymentStatus,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.PaymentMethod,
+			&i.DeliveryStatus,
 		); err != nil {
 			return nil, err
 		}
@@ -87,7 +127,7 @@ func (q *Queries) GetAllOrders(ctx context.Context) ([]Order, error) {
 }
 
 const getOrder = `-- name: GetOrder :one
-SELECT id, user_id, order_status, total, payment_status, created_at, updated_at FROM orders WHERE id = $1
+SELECT id, user_id, order_status, total, payment_status, created_at, updated_at, payment_method, delivery_status FROM orders WHERE id = $1
 `
 
 func (q *Queries) GetOrder(ctx context.Context, id uuid.UUID) (Order, error) {
@@ -101,12 +141,14 @@ func (q *Queries) GetOrder(ctx context.Context, id uuid.UUID) (Order, error) {
 		&i.PaymentStatus,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PaymentMethod,
+		&i.DeliveryStatus,
 	)
 	return i, err
 }
 
 const getOrdersByUserId = `-- name: GetOrdersByUserId :many
-SELECT id, user_id, order_status, total, payment_status, created_at, updated_at FROM orders WHERE user_id = $1
+SELECT id, user_id, order_status, total, payment_status, created_at, updated_at, payment_method, delivery_status FROM orders WHERE user_id = $1
 `
 
 func (q *Queries) GetOrdersByUserId(ctx context.Context, userID uuid.UUID) ([]Order, error) {
@@ -126,6 +168,8 @@ func (q *Queries) GetOrdersByUserId(ctx context.Context, userID uuid.UUID) ([]Or
 			&i.PaymentStatus,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.PaymentMethod,
+			&i.DeliveryStatus,
 		); err != nil {
 			return nil, err
 		}
@@ -141,7 +185,7 @@ func (q *Queries) GetOrdersByUserId(ctx context.Context, userID uuid.UUID) ([]Or
 }
 
 const getOrdersPerPage = `-- name: GetOrdersPerPage :many
-SELECT id, user_id, order_status, total, payment_status, created_at, updated_at FROM orders ORDER BY created_at Limit $1
+SELECT id, user_id, order_status, total, payment_status, created_at, updated_at, payment_method, delivery_status FROM orders ORDER BY created_at Limit $1
 `
 
 func (q *Queries) GetOrdersPerPage(ctx context.Context, limit int32) ([]Order, error) {
@@ -161,6 +205,8 @@ func (q *Queries) GetOrdersPerPage(ctx context.Context, limit int32) ([]Order, e
 			&i.PaymentStatus,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.PaymentMethod,
+			&i.DeliveryStatus,
 		); err != nil {
 			return nil, err
 		}
@@ -175,18 +221,19 @@ func (q *Queries) GetOrdersPerPage(ctx context.Context, limit int32) ([]Order, e
 	return items, nil
 }
 
-const updateOrderStatus = `-- name: UpdateOrderStatus :one
-UPDATE orders SET order_status = $1 WHERE id = $2
-RETURNING id, user_id, order_status, total, payment_status, created_at, updated_at
+const updateDeliveryStatus = `-- name: UpdateDeliveryStatus :one
+UPDATE orders SET delivery_status = $1, updated_at = $3 WHERE id = $2
+RETURNING id, user_id, order_status, total, payment_status, created_at, updated_at, payment_method, delivery_status
 `
 
-type UpdateOrderStatusParams struct {
-	OrderStatus string
-	ID          uuid.UUID
+type UpdateDeliveryStatusParams struct {
+	DeliveryStatus sql.NullString
+	ID             uuid.UUID
+	UpdatedAt      sql.NullTime
 }
 
-func (q *Queries) UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) (Order, error) {
-	row := q.db.QueryRowContext(ctx, updateOrderStatus, arg.OrderStatus, arg.ID)
+func (q *Queries) UpdateDeliveryStatus(ctx context.Context, arg UpdateDeliveryStatusParams) (Order, error) {
+	row := q.db.QueryRowContext(ctx, updateDeliveryStatus, arg.DeliveryStatus, arg.ID, arg.UpdatedAt)
 	var i Order
 	err := row.Scan(
 		&i.ID,
@@ -196,6 +243,64 @@ func (q *Queries) UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusPa
 		&i.PaymentStatus,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PaymentMethod,
+		&i.DeliveryStatus,
+	)
+	return i, err
+}
+
+const updateOrderStatus = `-- name: UpdateOrderStatus :one
+UPDATE orders SET order_status = $1, updated_at = $3 WHERE id = $2
+RETURNING id, user_id, order_status, total, payment_status, created_at, updated_at, payment_method, delivery_status
+`
+
+type UpdateOrderStatusParams struct {
+	OrderStatus string
+	ID          uuid.UUID
+	UpdatedAt   sql.NullTime
+}
+
+func (q *Queries) UpdateOrderStatus(ctx context.Context, arg UpdateOrderStatusParams) (Order, error) {
+	row := q.db.QueryRowContext(ctx, updateOrderStatus, arg.OrderStatus, arg.ID, arg.UpdatedAt)
+	var i Order
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.OrderStatus,
+		&i.Total,
+		&i.PaymentStatus,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.PaymentMethod,
+		&i.DeliveryStatus,
+	)
+	return i, err
+}
+
+const updatePaymentStatus = `-- name: UpdatePaymentStatus :one
+UPDATE orders SET payment_status = $1, updated_at = $3 WHERE id = $2
+RETURNING id, user_id, order_status, total, payment_status, created_at, updated_at, payment_method, delivery_status
+`
+
+type UpdatePaymentStatusParams struct {
+	PaymentStatus sql.NullString
+	ID            uuid.UUID
+	UpdatedAt     sql.NullTime
+}
+
+func (q *Queries) UpdatePaymentStatus(ctx context.Context, arg UpdatePaymentStatusParams) (Order, error) {
+	row := q.db.QueryRowContext(ctx, updatePaymentStatus, arg.PaymentStatus, arg.ID, arg.UpdatedAt)
+	var i Order
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.OrderStatus,
+		&i.Total,
+		&i.PaymentStatus,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.PaymentMethod,
+		&i.DeliveryStatus,
 	)
 	return i, err
 }
