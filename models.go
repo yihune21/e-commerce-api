@@ -11,6 +11,7 @@ type User struct{
 	Id uuid.UUID `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
+	Phone string `json:"phone,omitempty"`
 	Password string `json:"password"`
 	IsAdmin  bool `json:"is_admin"`
 	CreatedAt time.Time `json:"created_at"`
@@ -23,6 +24,7 @@ func databaseUserToUser(dbuser database.User) User  {
 		Id: dbuser.ID,
 		Name: dbuser.Name,
 		Email: dbuser.Email,
+		Phone: dbuser.Phone.String,
 		Password: dbuser.Password,
 		IsAdmin: dbuser.IsAdmin,
 		CreatedAt: dbuser.CreatedAt,
@@ -178,6 +180,8 @@ type Order struct{
 	OrderStatus string `json:"order_status"`
 	Total   string `json:"total"`
 	PaymentStatus string `json:"payment_status"`
+	PaymentMethod string `json:"payment_method"`
+	DeliveryStatus string `json:"delivery_status"`
 	CreatedAt    time.Time  `json:"created_at"`
 	UpdatedAt    time.Time  `json:"updated_at"`
 }
@@ -189,6 +193,8 @@ func DatabaseOrderToOrder(dbOrder database.Order) Order {
 		OrderStatus: dbOrder.OrderStatus,
 		Total: dbOrder.Total,
 		PaymentStatus: dbOrder.PaymentStatus.String,
+		PaymentMethod: dbOrder.PaymentMethod.String,
+		DeliveryStatus: dbOrder.DeliveryStatus.String,
 		CreatedAt: dbOrder.CreatedAt.Time,
 		UpdatedAt: dbOrder.UpdatedAt.Time,
 	}
@@ -233,4 +239,38 @@ func DatabaseOrderItemsToOrderItems(dbOrderItems []database.OrderItem) []OrderIt
 	}
 	
 	return orderItems
+}
+
+type ShippingAddress struct {
+	Id                   uuid.UUID `json:"id"`
+	OrderId              uuid.UUID `json:"order_id"`
+	FullName             string    `json:"full_name"`
+	Phone                string    `json:"phone"`
+	AddressLine1         string    `json:"address_line1"`
+	AddressLine2         string    `json:"address_line2,omitempty"`
+	City                 string    `json:"city"`
+	State                string    `json:"state"`
+	PostalCode           string    `json:"postal_code"`
+	Country              string    `json:"country"`
+	DeliveryInstructions string    `json:"delivery_instructions,omitempty"`
+	CreatedAt            time.Time `json:"created_at"`
+	UpdatedAt            time.Time `json:"updated_at"`
+}
+
+func DatabaseShippingAddressToShippingAddress(dbAddr database.ShippingAddress) ShippingAddress {
+	return ShippingAddress{
+		Id:                   dbAddr.ID,
+		OrderId:              dbAddr.OrderID,
+		FullName:             dbAddr.FullName,
+		Phone:                dbAddr.Phone,
+		AddressLine1:         dbAddr.AddressLine1,
+		AddressLine2:         dbAddr.AddressLine2.String,
+		City:                 dbAddr.City,
+		State:                dbAddr.State,
+		PostalCode:           dbAddr.PostalCode,
+		Country:              dbAddr.Country,
+		DeliveryInstructions: dbAddr.DeliveryInstructions.String,
+		CreatedAt:            dbAddr.CreatedAt.Time,
+		UpdatedAt:            dbAddr.UpdatedAt.Time,
+	}
 }

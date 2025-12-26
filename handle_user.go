@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -19,6 +20,7 @@ func (apiConf apiConfig) New(w http.ResponseWriter , r *http.Request){
 	type  parameters struct{
         Name string `json:"name"`
 		Email string `json:"email"`
+		Phone string `json:"phone"`
 		Password string `json:"password"`
 
 	}
@@ -52,10 +54,17 @@ func (apiConf apiConfig) New(w http.ResponseWriter , r *http.Request){
         return
 	}
 
+	phone := sql.NullString{}
+	if params.Phone != "" {
+		phone.String = params.Phone
+		phone.Valid = true
+	}
+	
 	user , err := apiConf.db.CreateUser(r.Context() , database.CreateUserParams{
 		ID:uuid.New(),
 		Name: params.Name,
 		Email: params.Email,
+		Phone: phone,
 		Password:hashed_password,
 		IsAdmin: false,
         CreatedAt: time.Now().UTC(),
@@ -74,6 +83,7 @@ func (apiConf apiConfig) NewAdmin(w http.ResponseWriter , r *http.Request ,Admin
 	type  parameters struct{
         Name string `json:"name"`
 		Email string `json:"email"`
+		Phone string `json:"phone"`
 		Password string `json:"password"`
       
 	}
@@ -107,10 +117,17 @@ func (apiConf apiConfig) NewAdmin(w http.ResponseWriter , r *http.Request ,Admin
 	}
 
 
+	phone := sql.NullString{}
+	if params.Phone != "" {
+		phone.String = params.Phone
+		phone.Valid = true
+	}
+	
 	user , err := apiConf.db.CreateUser(r.Context() , database.CreateUserParams{
 		ID:uuid.New(),
 		Name: params.Name,
 		Email: params.Email,
+		Phone: phone,
 		Password:hashed_password,
 		IsAdmin: true,
         CreatedAt: time.Now().UTC(),

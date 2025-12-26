@@ -22,6 +22,18 @@ func(apiCfg apiConfig) CreateOrder(w http.ResponseWriter , r *http.Request, user
             ProductID uuid.UUID `json:"product_id"`
             Qty       int       `json:"qty"`
         } `json:"items"`
+        PaymentMethod string `json:"payment_method"` // 'cod' or 'online'
+        ShippingAddress struct {
+            FullName     string `json:"full_name"`
+            Phone        string `json:"phone"`
+            AddressLine1 string `json:"address_line1"`
+            AddressLine2 string `json:"address_line2"`
+            City         string `json:"city"`
+            State        string `json:"state"`
+            PostalCode   string `json:"postal_code"`
+            Country      string `json:"country"`
+            DeliveryInstructions string `json:"delivery_instructions"`
+        } `json:"shipping_address"`
     }
 
     decode := json.NewDecoder(r.Body)
@@ -30,6 +42,19 @@ func(apiCfg apiConfig) CreateOrder(w http.ResponseWriter , r *http.Request, user
 
     if err != nil {
         respondWithError(w , 400,fmt.Sprintf("Error with parsing a json %v",err))
+        return
+    }
+    
+    // Validate payment method
+    if params.PaymentMethod != "cod" && params.PaymentMethod != "online" {
+        params.PaymentMethod = "cod" // Default to COD
+    }
+    
+    // Validate shipping address
+    if params.ShippingAddress.FullName == "" || params.ShippingAddress.Phone == "" || 
+       params.ShippingAddress.AddressLine1 == "" || params.ShippingAddress.City == "" ||
+       params.ShippingAddress.State == "" || params.ShippingAddress.PostalCode == "" {
+        respondWithError(w , 400, "Shipping address is required with all fields")
         return
     }
     
@@ -71,19 +96,68 @@ func(apiCfg apiConfig) CreateOrder(w http.ResponseWriter , r *http.Request, user
     payment_status := sql.NullString{}
     payment_status.String = "pending"
     payment_status.Valid = true
+    
+    // Set delivery status based on payment method
+    delivery_status := "pending"
+    order_status := "pending"
+    if params.PaymentMethod == "cod" {
+        delivery_status = "confirmed" // Auto-confirm COD orders
+        order_status = "confirmed"
+    }
 	
     order , err := apiCfg.db.CreateOrder(r.Context() , database.CreateOrderParams{
         ID: uuid.New(),
         UserID: user.ID,
-        OrderStatus: "pending",
+        OrderStatus: order_status,
         Total: strconv.FormatFloat(total,'g',-1,64),
         PaymentStatus: payment_status,
+        PaymentMethod: sql.NullString{String: params.PaymentMethod, Valid: true},
+        DeliveryStatus: sql.NullString{String: delivery_status, Valid: true},
         CreatedAt: created_at,
         UpdatedAt: updated_at,        
     })
 
     if err != nil {
         respondWithError(w , 400,fmt.Sprintf("Couldn't create an order %v",err))
+        return
+    }
+    
+    // Create shipping address
+    address_line2 := sql.NullString{}
+    if params.ShippingAddress.AddressLine2 != "" {
+        address_line2.String = params.ShippingAddress.AddressLine2
+        address_line2.Valid = true
+    }
+    
+    delivery_instructions := sql.NullString{}
+    if params.ShippingAddress.DeliveryInstructions != "" {
+        delivery_instructions.String = params.ShippingAddress.DeliveryInstructions
+        delivery_instructions.Valid = true
+    }
+    
+    country := params.ShippingAddress.Country
+    if country == "" {
+        country = "Ethiopia" // Default country
+    }
+    
+    _, err = apiCfg.db.CreateShippingAddress(r.Context(), database.CreateShippingAddressParams{
+        ID: uuid.New(),
+        OrderID: order.ID,
+        FullName: params.ShippingAddress.FullName,
+        Phone: params.ShippingAddress.Phone,
+        AddressLine1: params.ShippingAddress.AddressLine1,
+        AddressLine2: address_line2,
+        City: params.ShippingAddress.City,
+        State: params.ShippingAddress.State,
+        PostalCode: params.ShippingAddress.PostalCode,
+        Country: country,
+        DeliveryInstructions: delivery_instructions,
+        CreatedAt: created_at,
+        UpdatedAt: updated_at,
+    })
+    
+    if err != nil {
+        respondWithError(w , 400,fmt.Sprintf("Couldn't create shipping address %v",err))
         return
     }
 
