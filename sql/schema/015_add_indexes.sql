@@ -76,11 +76,11 @@ CREATE INDEX idx_cart_items_product_id ON cart_items(product_id);
 
 -- ==================== REFRESH TOKENS TABLE INDEXES ====================
 -- Token lookup for refresh
-CREATE INDEX idx_refresh_tokens_token ON refresh_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token ON refresh_tokens(token);
 -- User's tokens
-CREATE INDEX idx_refresh_tokens_user_id ON refresh_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id);
 -- Cleanup expired tokens
-CREATE INDEX idx_refresh_tokens_expires_at ON refresh_tokens(expires_at) WHERE revoked_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires_at ON refresh_tokens(expires_at) WHERE revoked_at IS NULL;
 
 -- ==================== TOKEN BLACKLIST TABLE INDEXES ====================
 -- Token validation check

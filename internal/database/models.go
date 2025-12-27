@@ -70,16 +70,17 @@ type Otp struct {
 }
 
 type Product struct {
-	ID          uuid.UUID
-	Name        string
-	Description sql.NullString
-	Price       string
-	Stock       int32
-	CategoryID  uuid.UUID
-	ImageUrl    sql.NullString
-	IsActive    sql.NullBool
-	CreatedAt   sql.NullTime
-	UpdatedAt   sql.NullTime
+	ID           uuid.UUID
+	Name         string
+	Description  sql.NullString
+	Price        string
+	Stock        int32
+	CategoryID   uuid.UUID
+	ImageUrl     sql.NullString
+	IsActive     sql.NullBool
+	CreatedAt    sql.NullTime
+	UpdatedAt    sql.NullTime
+	SearchVector interface{}
 }
 
 type RefreshToken struct {
