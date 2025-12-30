@@ -46,6 +46,24 @@ func (q *Queries) CreateCart(ctx context.Context, arg CreateCartParams) (Cart, e
 	return i, err
 }
 
+const deleteCart = `-- name: DeleteCart :one
+DELETE FROM carts WHERE id = $1
+RETURNING id, user_id, status, created_at, updated_at
+`
+
+func (q *Queries) DeleteCart(ctx context.Context, id uuid.UUID) (Cart, error) {
+	row := q.db.QueryRowContext(ctx, deleteCart, id)
+	var i Cart
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getCartByUserId = `-- name: GetCartByUserId :one
 SELECT id, user_id, status, created_at, updated_at FROM carts WHERE user_id = $1
 `

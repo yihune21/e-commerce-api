@@ -224,3 +224,20 @@ func  (apiCfg apiConfig)UpdateCartItem(w http.ResponseWriter, r *http.Request, u
 	respondWithJSON(w , 200 , DatabaseCartItemToCartItem(new_cart_item))
 
 }
+
+func (apiCfg apiConfig)ClearCart(w http.ResponseWriter, r *http.Request, user database.User)  {
+	idStr := chi.URLParam(r,"cartId")
+	if idStr == "" {
+		respondWithError(w ,400 , "Missing cart id")
+		return
+	}
+
+	id,err := uuid.Parse(idStr)
+    if err != nil {
+		respondWithError(w ,400 , fmt.Sprintf("Error with parsing cart id %v" ,err))
+		return
+	}
+	
+	apiCfg.db.DeleteCart(r.Context() , id)
+	
+}

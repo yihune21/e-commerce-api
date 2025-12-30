@@ -7,4 +7,8 @@ RETURNING *;
 -- name: GetCartByUserId :one
 SELECT * FROM carts WHERE user_id = $1;
 
+-- name: DeleteCart :one
+DELETE FROM carts WHERE id = $1
+RETURNING *;
+
 
