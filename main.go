@@ -88,7 +88,7 @@ func main()  {
     v1Router.Get("/product/pagination",apiCfg.middlewareAuth(apiCfg.Pagination))
     v1Router.Get("/order/pagination",apiCfg.middlewareAuth(apiCfg.OrderPagination))
     v1Router.Post("/order/cancel/{id}" ,apiCfg.middlewareAuth(apiCfg.OrderCancellation))
-    v1Router.Post("/admin/order/cancel/{id}" ,apiCfg.AdminMiddlewareAuth(apiCfg.OrderCancellation))
+    v1Router.Patch("/admin/order/cancel/{id}" ,apiCfg.AdminMiddlewareAuth(apiCfg.OrderCancellation))
     
     // Delivery endpoints for COD
     v1Router.Patch("/delivery/order/{id}/status", apiCfg.middlewareAuth(apiCfg.UpdateDeliveryStatus))

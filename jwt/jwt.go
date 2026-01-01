@@ -50,7 +50,6 @@ func GenerateAccessToken(user database.User) string {
 	 if err != nil {
 		panic(err)
 	 }
-	 fmt.Printf("Access token , %v\n" ,access_token)
 	 return access_token
 }
 
@@ -67,7 +66,6 @@ func GenerateRefreshToken(user database.User) string {
 	 if err != nil {
 		panic(err)
 	 }
-	 fmt.Printf("Refresh token , %v\n" ,refresh_token)
 	 return refresh_token
 }
 
