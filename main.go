@@ -39,7 +39,7 @@ func main()  {
 	router := chi.NewRouter()
 	router.Use(cors.Handler(
 		cors.Options{
-		AllowedOrigins: []string{"https://*"},
+		AllowedOrigins: []string{"http://*"},
 		AllowedMethods: []string{"GET","POST","DELETE","PUT","PATCH"},
 		AllowedHeaders: []string{"*"},
 		ExposedHeaders: []string{"Link"},
