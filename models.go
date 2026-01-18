@@ -64,7 +64,7 @@ func OtpRes(status , otp string) Otp {
 	}
 }
 type Product struct{
-	Id   uuid.UUID `json:'id'`
+	Id   uuid.UUID `json:"id"`
 	Name string `json:"name"`
 	Description string `json:"description"`
 	Price string `json:"price"`
