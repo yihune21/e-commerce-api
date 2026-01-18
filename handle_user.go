@@ -74,9 +74,22 @@ func (apiConf apiConfig) New(w http.ResponseWriter , r *http.Request){
 		return
 	}
 
+    // fmt.Printf("Dear user %s,You've successfully created an account!\n",user.Name)
+	access_token := jwtAuth.GenerateAccessToken(user)
+	refresh_token := jwtAuth.GenerateRefreshToken(user)
     
-    fmt.Printf("Dear user %s,You've successfully created an account!\n",user.Name)
-    respondWithJSON(w , 200,databaseUserToUser(user))
+	_, err = apiConf.db.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
+		ID: uuid.New(),
+		UserID: user.ID,
+		Token: refresh_token,
+		ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
+		CreatedAt: time.Now().UTC(),
+	})
+	if err != nil {
+		respondWithError(w, 500, fmt.Sprintf("Failed to store refresh token: %v", err))
+		return
+	}
+    respondWithJSON(w , 200,UserReg(databaseUserToUser(user) , ResponseToken(access_token , refresh_token)))
 }
 func (apiConf apiConfig) NewAdmin(w http.ResponseWriter , r *http.Request ,Admin database.User){
 	type  parameters struct{
@@ -138,8 +151,22 @@ func (apiConf apiConfig) NewAdmin(w http.ResponseWriter , r *http.Request ,Admin
 	}
 
     
-    fmt.Printf("Dear user %s,You've successfully created an account!\n",user.Name)
-    respondWithJSON(w , 200,databaseUserToUser(user))
+    // fmt.Printf("Dear user %s,You've successfully created an account!\n",user.Name)
+    access_token := jwtAuth.GenerateAccessToken(user)
+	refresh_token := jwtAuth.GenerateRefreshToken(user)
+    
+	_, err = apiConf.db.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
+		ID: uuid.New(),
+		UserID: user.ID,
+		Token: refresh_token,
+		ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
+		CreatedAt: time.Now().UTC(),
+	})
+	if err != nil {
+		respondWithError(w, 500, fmt.Sprintf("Failed to store refresh token: %v", err))
+		return
+	}
+    respondWithJSON(w , 200,UserReg(databaseUserToUser(user) , ResponseToken(access_token , refresh_token)))
 }
 
 func (apiConf *apiConfig)handlerGetUserByUserId(w http.ResponseWriter ,r *http.Request , user database.User){

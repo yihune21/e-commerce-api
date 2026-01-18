@@ -45,6 +45,19 @@ func ResponseToken(accessToken string, refreshToken string) Token {
 	}
 }
 
+type UserRegistrationRes struct{
+	User User `json:"user"`
+	Token Token `json:"token"`
+}
+
+func UserReg(dbUser User , dbToken Token) UserRegistrationRes {
+	return UserRegistrationRes{
+		User: dbUser,
+		Token: dbToken,
+	}
+
+}
+
 type HealthRes  struct{
 	Status string `json:"status"`
 }
